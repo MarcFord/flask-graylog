@@ -193,7 +193,6 @@ wheels = [
 
 [[package]]
 name = "flask-graylog"
-version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "flask" },

@@ -1,12 +1,13 @@
 # flask-graylog
 
-[![CI](https://github.com/MarcFord/flask-graylog/actions/workflows/ci.yml/badge.svg)](https://github.com/MarcFord/flask-graylog/actions/workflows/ci.yml)
+[![CI](https://github.com/MarcFord/flask-graylog/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MarcFord/flask-graylog/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/MarcFord/flask-graylog/branch/main/graph/badge.svg)](https://codecov.io/gh/MarcFord/flask-graylog)
-[![PyPI version](https://badge.fury.io/py/flask-graylog.svg)](https://badge.fury.io/py/flask-graylog)
-[![Python versions](https://img.shields.io/pypi/pyversions/flask-graylog.svg)](https://pypi.org/project/flask-graylog/)
-[![License](https://img.shields.io/github/license/MarcFord/flask-graylog.svg)](https://github.com/MarcFord/flask-graylog/blob/main/LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MarcFord/flask-graylog/blob/main/LICENSE)
 
 A Flask extension for sending application logs to Graylog via GELF (Graylog Extended Log Format).
+
+> **📊 Badge Status**: The CI badge shows the latest build status. The codecov badge will update once coverage reports are uploaded to codecov.io. PyPI badges will appear after the first release.
 
 ## Features
 
@@ -116,3 +117,18 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for de
 - 🐛 **Bug Reports:** [GitHub Issues](https://github.com/MarcFord/flask-graylog/issues)
 - 💡 **Feature Requests:** [GitHub Issues](https://github.com/MarcFord/flask-graylog/issues)
 - 💬 **Discussions:** [GitHub Discussions](https://github.com/MarcFord/flask-graylog/discussions)
+
+---
+
+### Badge Information
+
+- **CI Badge**: Shows the status of the latest GitHub Actions workflow run
+- **Codecov Badge**: Shows test coverage percentage (updates after coverage upload to codecov.io)
+- **Python Badge**: Indicates supported Python versions (3.9+)
+- **License Badge**: Shows the project license (MIT)
+
+**After first PyPI release, these badges will also appear:**
+```markdown
+[![PyPI version](https://badge.fury.io/py/flask-graylog.svg)](https://badge.fury.io/py/flask-graylog)
+[![PyPI downloads](https://img.shields.io/pypi/dm/flask-graylog.svg)](https://pypi.org/project/flask-graylog/)
+```

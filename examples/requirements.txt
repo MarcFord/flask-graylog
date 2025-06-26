@@ -1,0 +1,11 @@
+# Requirements for the Flask Graylog Example Application
+
+# Core dependencies (same as main package)
+Flask>=1.1.4,<2.0.0
+pygelf>=0.4.2
+user-agents>=2.0.0
+MarkupSafe<2.1.0
+
+# The flask-graylog extension
+# In production, you would install from PyPI: flask-graylog>=1.0.0
+# For this example, we assume you're using the local development version

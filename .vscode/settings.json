@@ -1,0 +1,34 @@
+{
+    "[python]": {
+          "editor.tabSize": 4,
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
+          },
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        },
+        "ruff.nativeServer": "on",
+        "editor.rulers": [120],
+        "window.zoomLevel": 2,
+        "editor.minimap.enabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestPath": "${workspaceFolder}/.venv/bin/python",
+        "python.testing.cwd": "${workspaceFolder}/",
+        "python.testing.pytestArgs": [
+            "-m",
+            "pytest",
+            "-v",
+            "tests/"
+        ],
+        "python.testing.autoTestDiscoverOnSaveEnabled": true,
+        "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+        "python.terminal.activateEnvironment": false,
+        "python.analysis.extraPaths": [
+            "${workspaceFolder}/.venv/lib/python3.9/site-packages",
+            "${workspaceFolder}/src"
+        ],
+        "python.analysis.autoImportCompletions": true,
+        "python.analysis.typeCheckingMode": "basic"
+    }

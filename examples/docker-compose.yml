@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # MongoDB for Graylog metadata
+  mongodb:
+    image: mongo:4.2
+    container_name: graylog_mongodb
+    restart: unless-stopped
+    networks:
+      - graylog
+    volumes:
+      - mongodb_data:/data/db
+
+  # Elasticsearch for log storage
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
+    container_name: graylog_elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    networks:
+      - graylog
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
+  # Graylog server
+  graylog:
+    image: graylog/graylog:4.2
+    container_name: graylog_server
+    restart: unless-stopped
+    environment:
+      # CHANGE THESE PASSWORDS!
+      - GRAYLOG_PASSWORD_SECRET=somepasswordpepper123456789
+      - GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+      - GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9000/
+      - GRAYLOG_MONGODB_URI=mongodb://mongodb:27017/graylog
+      - GRAYLOG_ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - graylog
+    ports:
+      # Graylog web interface
+      - "9000:9000"
+      # GELF UDP
+      - "12201:12201/udp"
+      # GELF TCP
+      - "12201:12201/tcp"
+      # Syslog UDP
+      - "1514:1514/udp"
+      # Syslog TCP
+      - "1514:1514/tcp"
+    depends_on:
+      - mongodb
+      - elasticsearch
+    volumes:
+      - graylog_data:/usr/share/graylog/data
+
+networks:
+  graylog:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  graylog_data:
+    driver: local

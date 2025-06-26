@@ -60,6 +60,11 @@ These badges will work after your first PyPI release:
 
 ## Troubleshooting
 
+### Workflow Parsing Errors
+- **Issue**: "workflow is not reusable as it is missing a `on.workflow_call` trigger"
+- **Solution**: ✅ **FIXED** - Added `workflow_call` trigger to CI workflow
+- **Details**: The release workflow calls the CI workflow, which now supports reusable workflow calls
+
 ### CI Badge Not Updating
 - Check that the workflow file is named exactly `ci.yml`
 - Ensure the workflow is triggered on push to main branch

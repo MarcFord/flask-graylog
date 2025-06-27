@@ -57,12 +57,18 @@ ibm = [
     "requests>=2.25.0",
 ]
 
+# Oracle Cloud Infrastructure Logging support
+oci = [
+    "oci>=2.40.0",
+]
+
 # Install all backends
 all = [
     "pygelf>=0.4.2",
     "google-cloud-logging>=3.0.0", 
     "boto3>=1.26.0",
     "requests>=2.25.0",
+    "oci>=2.40.0",
 ]
 
 # Development and testing dependencies

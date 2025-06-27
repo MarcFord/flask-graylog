@@ -3,7 +3,7 @@ Flask Network Logging - A Flask extension for integrating with remote logging se
 
 This package provides an easy-to-use interface for sending logs from a Flask application
 to remote logging services including Graylog, Google Cloud Logging, AWS CloudWatch Logs,
-Azure Monitor Logs, and IBM Cloud Logs.
+Azure Monitor Logs, IBM Cloud Logs, and Oracle Cloud Infrastructure Logging.
 """
 
 # Dynamic version detection
@@ -31,6 +31,7 @@ from .gcp_extension import GCPLogExtension
 from .aws_extension import AWSLogExtension
 from .azure_extension import AzureLogExtension
 from .ibm_extension import IBMLogExtension
+from .oci_extension import OCILogExtension
 
 # Create aliases for easier imports
 Graylog = GraylogExtension
@@ -38,10 +39,11 @@ GCPLog = GCPLogExtension
 AWSLog = AWSLogExtension
 AzureLog = AzureLogExtension
 IBMLog = IBMLogExtension
+OCILog = OCILogExtension
 
 __all__ = [
-    "GraylogExtension", "GCPLogExtension", "AWSLogExtension", "AzureLogExtension", "IBMLogExtension",
-    "Graylog", "GCPLog", "AWSLog", "AzureLog", "IBMLog",
+    "GraylogExtension", "GCPLogExtension", "AWSLogExtension", "AzureLogExtension", "IBMLogExtension", "OCILogExtension",
+    "Graylog", "GCPLog", "AWSLog", "AzureLog", "IBMLog", "OCILog",
     "GraylogContextFilter", "FlaskNetworkLoggingContextFilter", "FNLContextFilter",  # Last two are aliases
     "__version__"
 ]

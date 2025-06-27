@@ -5,7 +5,7 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MarcFord/flask-network-logging/blob/main/LICENSE)
 
-A Flask extension for sending application logs to remote logging services including Graylog via GELF (Graylog Extended Log Format), Google Cloud Logging, AWS CloudWatch Logs, Azure Monitor Logs, and IBM Cloud Logs.
+A Flask extension for sending application logs to remote logging services including Graylog via GELF (Graylog Extended Log Format), Google Cloud Logging, AWS CloudWatch Logs, Azure Monitor Logs, IBM Cloud Logs, and Oracle Cloud Infrastructure Logging.
 
 > **📊 Badge Status**: The CI badge shows the latest build status. The codecov badge will update once coverage reports are uploaded to codecov.io. PyPI badges will appear after the first release.
 
@@ -23,6 +23,7 @@ A Flask extension for sending application logs to remote logging services includ
 - 🚀 Support for AWS CloudWatch Logs
 - 📊 Support for Azure Monitor Logs
 - 🔵 Support for IBM Cloud Logs
+- 🟠 Support for Oracle Cloud Infrastructure Logging
 
 ## Installation
 
@@ -63,10 +64,15 @@ pip install flask-network-logging[azure]
 pip install flask-network-logging[ibm]
 ```
 
+**For Oracle Cloud Infrastructure Logging support:**
+```bash
+pip install flask-network-logging[oci]
+```
+
 **For multiple backends:**
 ```bash
 # Install specific backends
-pip install flask-network-logging[graylog,aws]
+pip install flask-network-logging[graylog,aws,oci]
 
 # Or install all backends
 pip install flask-network-logging[all]
@@ -236,6 +242,36 @@ if __name__ == '__main__':
     app.run()
 ```
 
+### Oracle Cloud Infrastructure Logging Integration
+
+```python
+from flask import Flask
+from flask_network_logging import OCILog
+
+app = Flask(__name__)
+
+# Configure OCI Logging
+app.config.update({
+    'OCI_CONFIG_PROFILE': 'DEFAULT',
+    'OCI_LOG_ID': 'ocid1.log.oc1...',
+    'OCI_SOURCE': 'your-app-name',
+    'OCI_LOG_LEVEL': 'INFO',
+    'OCI_ENVIRONMENT': 'production'
+})
+
+# Initialize extension
+oci_log = OCILog(app)
+oci_log._setup_logging()
+
+@app.route('/')
+def hello():
+    app.logger.info("Hello world endpoint accessed")
+    return "Hello, World!"
+
+if __name__ == '__main__':
+    app.run()
+```
+
 ## Examples
 
 Check out the comprehensive example application in the [`examples/`](examples/) directory:
@@ -318,6 +354,19 @@ cd examples/
 | `IBM_TIMEOUT` | HTTP request timeout in seconds | `30` |
 | `IBM_INDEX_META` | Whether metadata should be indexed/searchable | `False` |
 | `IBM_TAGS` | Comma-separated list of tags for grouping hosts | `''` |
+
+### Oracle Cloud Infrastructure Logging Configuration
+
+| Configuration Key | Description | Default |
+|-------------------|-------------|---------|
+| `OCI_CONFIG_FILE` | Path to OCI config file | `~/.oci/config` |
+| `OCI_CONFIG_PROFILE` | OCI config profile name | `DEFAULT` |
+| `OCI_LOG_GROUP_ID` | OCI log group OCID (optional) | `None` |
+| `OCI_LOG_ID` | OCI log OCID | Required |
+| `OCI_COMPARTMENT_ID` | OCI compartment OCID (optional) | `None` |
+| `OCI_SOURCE` | Source identifier for log entries | `flask-app` |
+| `OCI_LOG_LEVEL` | Minimum log level | `INFO` |
+| `OCI_ENVIRONMENT` | Environment where logs should be sent to OCI | `development` |
 
 
 ## Development

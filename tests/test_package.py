@@ -24,8 +24,8 @@ class TestPackageModule:
         """Test that main classes can be imported from package."""
         from flask_network_logging import (
             GraylogExtension, GCPLogExtension, AWSLogExtension, 
-            AzureLogExtension, IBMLogExtension,
-            Graylog, GCPLog, AWSLog, AzureLog, IBMLog
+            AzureLogExtension, IBMLogExtension, OCILogExtension,
+            Graylog, GCPLog, AWSLog, AzureLog, IBMLog, OCILog
         )
         from flask_network_logging.context_filter import GraylogContextFilter
 
@@ -34,11 +34,13 @@ class TestPackageModule:
         assert AWSLogExtension is not None
         assert AzureLogExtension is not None
         assert IBMLogExtension is not None
+        assert OCILogExtension is not None
         assert Graylog is not None
         assert GCPLog is not None
         assert AWSLog is not None
         assert AzureLog is not None
         assert IBMLog is not None
+        assert OCILog is not None
         assert GraylogContextFilter is not None
         
         # Test aliases work correctly
@@ -47,6 +49,7 @@ class TestPackageModule:
         assert AWSLog == AWSLogExtension
         assert AzureLog == AzureLogExtension
         assert IBMLog == IBMLogExtension
+        assert OCILog == OCILogExtension
 
     def test_package_docstring(self):
         """Test that package has proper docstring."""

@@ -27,7 +27,7 @@ from datetime import datetime
 
 from flask import Flask, jsonify, request, g
 
-from flask_network_logging import GraylogExtension, GCPLogExtension, AWSLogExtension, AzureLogExtension, IBMLogExtension
+from flask_network_logging import GraylogExtension, GCPLogExtension, AWSLogExtension, AzureLogExtension, IBMLogExtension, OCILogExtension
 
 # Create Flask application
 app = Flask(__name__)
@@ -72,6 +72,16 @@ app.config.update({
     'IBM_LOG_LEVEL': os.getenv('IBM_LOG_LEVEL', 'INFO'),
     'IBM_ENVIRONMENT': os.getenv('IBM_ENVIRONMENT', 'development'),
     'IBM_TAGS': os.getenv('IBM_TAGS', 'flask,multi-backend,example'),
+    
+    # Oracle Cloud Infrastructure Logging configuration
+    'OCI_CONFIG_FILE': os.getenv('OCI_CONFIG_FILE'),
+    'OCI_CONFIG_PROFILE': os.getenv('OCI_CONFIG_PROFILE', 'DEFAULT'),
+    'OCI_LOG_GROUP_ID': os.getenv('OCI_LOG_GROUP_ID'),
+    'OCI_LOG_ID': os.getenv('OCI_LOG_ID'),
+    'OCI_COMPARTMENT_ID': os.getenv('OCI_COMPARTMENT_ID'),
+    'OCI_SOURCE': os.getenv('OCI_SOURCE', 'FlaskMultiBackendLogs'),
+    'OCI_LOG_LEVEL': os.getenv('OCI_LOG_LEVEL', 'INFO'),
+    'OCI_ENVIRONMENT': os.getenv('OCI_ENVIRONMENT', 'development'),
 })
 
 
@@ -94,10 +104,15 @@ gcp_log = GCPLogExtension(app, get_current_user=get_current_user)
 aws_log = AWSLogExtension(app, get_current_user=get_current_user)
 azure_log = AzureLogExtension(app, get_current_user=get_current_user)
 ibm_log = IBMLogExtension(app, get_current_user=get_current_user)
+oci_log = OCILogExtension(app, get_current_user=get_current_user)
 
 # Set up logging for all backends
 graylog._setup_logging()
 gcp_log._setup_logging()
+aws_log._setup_logging()
+azure_log._setup_logging()
+ibm_log._setup_logging()
+oci_log._setup_logging()
 aws_log._setup_logging()
 azure_log._setup_logging()
 ibm_log._setup_logging()

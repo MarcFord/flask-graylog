@@ -31,6 +31,7 @@ class GraylogExtension:
         self.app: Optional[Flask] = None
         self.get_current_user: Optional[Callable] = get_current_user
         self.config: dict[str, Any] = {}
+        self._logging_setup: bool = False
 
         if app is not None:
             self.init_app(
@@ -108,6 +109,12 @@ class GraylogExtension:
         """
         if not self.app:
             raise RuntimeError("GraylogExtension must be initialized with a Flask app.")
+
+        # Prevent duplicate setup
+        if self._logging_setup:
+            return
+        
+        self._logging_setup = True
 
         if str(self.app.env).lower() == self.app.config.get("GRAYLOG_ENVIRONMENT", "production").lower():
             log_handler = GelfTcpHandler(

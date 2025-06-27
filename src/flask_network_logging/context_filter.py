@@ -1,5 +1,5 @@
 """
-flask_graylog.context_filter
+flask_network_logging.context_filter
 ---------------------------
 
 This module provides a logging filter for Flask applications that enriches log records

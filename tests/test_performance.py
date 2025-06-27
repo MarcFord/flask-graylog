@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 import pytest
 from flask import Flask
 
-from flask_graylog import GraylogContextFilter, GraylogExtension
+from flask_network_logging import GraylogContextFilter, GraylogExtension
 
 
 class TestPerformanceAndEdgeCases:
@@ -131,7 +131,7 @@ class TestPerformanceAndEdgeCases:
 
         with app.test_request_context("/test"):
             # Mock Flask request to simulate missing attributes
-            with patch("flask_graylog.context_filter.request") as mock_request:
+            with patch("flask_network_logging.context_filter.request") as mock_request:
                 mock_request.values = Mock()
                 mock_request.values.to_dict.side_effect = AttributeError("Missing method")
 
@@ -222,10 +222,13 @@ class TestPerformanceAndEdgeCases:
     def test_extension_with_none_app_config(self):
         """Test extension when app config values are None."""
         app = Flask(__name__)
-        # Clear all config to simulate missing configuration
+        # Clear all config to simulate missing configuration but keep essential Flask config
         app.config.clear()
-        # Set minimal required config to avoid KeyError
-        app.config["ENV"] = "production"
+        app.config.update({
+            "ENV": "production",
+            "DEBUG": False,
+            "TESTING": False,
+        })
 
         extension = GraylogExtension(app=app)
         config = extension._get_config_from_app()

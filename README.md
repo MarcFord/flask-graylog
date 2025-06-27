@@ -1,35 +1,39 @@
-# flask-graylog
+# flask-network-logging
 
-[![CI](https://github.com/MarcFord/flask-graylog/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MarcFord/flask-graylog/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/MarcFord/flask-graylog/branch/main/graph/badge.svg)](https://codecov.io/gh/MarcFord/flask-graylog)
+[![CI](https://github.com/MarcFord/flask-network-logging/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MarcFord/flask-network-logging/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/MarcFord/flask-network-logging/branch/main/graph/badge.svg)](https://codecov.io/gh/MarcFord/flask-network-logging)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MarcFord/flask-graylog/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MarcFord/flask-network-logging/blob/main/LICENSE)
 
-A Flask extension for sending application logs to Graylog via GELF (Graylog Extended Log Format).
+A Flask extension for sending application logs to remote logging services including Graylog via GELF (Graylog Extended Log Format) and Google Cloud Logging.
 
 > **📊 Badge Status**: The CI badge shows the latest build status. The codecov badge will update once coverage reports are uploaded to codecov.io. PyPI badges will appear after the first release.
 
 ## Features
 
-- 🚀 Easy Flask integration
+- 🚀 Easy Flask integration with multiple logging backends
 - 📝 Automatic request context logging
 - 🔧 Configurable log levels and filtering
 - 🌍 Environment-based configuration
 - 🏷️ Custom field support
 - 🔒 Production-ready with comprehensive testing
 - 🐍 Python 3.9+ support
+- 📡 Support for Graylog via GELF
+- ☁️ Support for Google Cloud Logging
 
 ## Installation
 
 ```bash
-pip install flask-graylog
+pip install flask-network-logging
 ```
 
 ## Quick Start
 
+### Graylog Integration
+
 ```python
 from flask import Flask
-from flask_graylog import Graylog
+from flask_network_logging import Graylog
 
 app = Flask(__name__)
 
@@ -43,6 +47,36 @@ app.config.update({
 
 # Initialize extension
 graylog = Graylog(app)
+graylog._setup_logging()
+
+@app.route('/')
+def hello():
+    app.logger.info("Hello world endpoint accessed")
+    return "Hello, World!"
+
+if __name__ == '__main__':
+    app.run()
+```
+
+### Google Cloud Logging Integration
+
+```python
+from flask import Flask
+from flask_network_logging import GCPLog
+
+app = Flask(__name__)
+
+# Configure Google Cloud Logging
+app.config.update({
+    'GCP_PROJECT_ID': 'your-gcp-project-id',
+    'GCP_LOG_NAME': 'flask-app',
+    'GCP_LOG_LEVEL': 'INFO',
+    'GCP_ENVIRONMENT': 'production'
+})
+
+# Initialize extension
+gcp_log = GCPLog(app)
+gcp_log._setup_logging()
 
 @app.route('/')
 def hello():
@@ -70,6 +104,8 @@ cd examples/
 
 ## Configuration
 
+### Graylog Configuration
+
 | Configuration Key | Description | Default |
 |-------------------|-------------|---------|
 | `GRAYLOG_HOST` | Graylog server hostname | `localhost` |
@@ -80,6 +116,18 @@ cd examples/
 | `GRAYLOG_APP_NAME` | Name of the application sending logs | `app.name` |
 | `GRAYLOG_SERVICE_NAME` | Name of the service sending logs. Useful if you have an application that is made up of multiple services | `app.name` |
 
+### Google Cloud Logging Configuration
+
+| Configuration Key | Description | Default |
+|-------------------|-------------|---------|
+| `GCP_PROJECT_ID` | Google Cloud Project ID | Required |
+| `GCP_CREDENTIALS_PATH` | Path to service account JSON file (optional if using default credentials) | `None` |
+| `GCP_LOG_NAME` | Name of the log in Cloud Logging | `flask-app` |
+| `GCP_LOG_LEVEL` | Minimum log level | `WARNING` |
+| `GCP_ENVIRONMENT` | Environment where logs should be sent to GCP | `production` |
+| `GCP_APP_NAME` | Name of the application sending logs | `app.name` |
+| `GCP_SERVICE_NAME` | Name of the service sending logs | `app.name` |
+
 
 ## Development
 
@@ -89,8 +137,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
 ```bash
 # Clone repository
-git clone https://github.com/MarcFord/flask-graylog.git
-cd flask-graylog
+git clone https://github.com/MarcFord/flask-network-logging.git
+cd flask-network-logging
 
 # Install dependencies
 make install-dev
@@ -113,10 +161,10 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for de
 
 ## Support
 
-- 📖 **Documentation:** [GitHub Wiki](https://github.com/MarcFord/flask-graylog/wiki)
-- 🐛 **Bug Reports:** [GitHub Issues](https://github.com/MarcFord/flask-graylog/issues)
-- 💡 **Feature Requests:** [GitHub Issues](https://github.com/MarcFord/flask-graylog/issues)
-- 💬 **Discussions:** [GitHub Discussions](https://github.com/MarcFord/flask-graylog/discussions)
+- 📖 **Documentation:** [GitHub Wiki](https://github.com/MarcFord/flask-network-logging/wiki)
+- 🐛 **Bug Reports:** [GitHub Issues](https://github.com/MarcFord/flask-network-logging/issues)
+- 💡 **Feature Requests:** [GitHub Issues](https://github.com/MarcFord/flask-network-logging/issues)
+- 💬 **Discussions:** [GitHub Discussions](https://github.com/MarcFord/flask-network-logging/discussions)
 
 ---
 
@@ -129,6 +177,6 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for de
 
 **After first PyPI release, these badges will also appear:**
 ```markdown
-[![PyPI version](https://badge.fury.io/py/flask-graylog.svg)](https://badge.fury.io/py/flask-graylog)
-[![PyPI downloads](https://img.shields.io/pypi/dm/flask-graylog.svg)](https://pypi.org/project/flask-graylog/)
+[![PyPI version](https://badge.fury.io/py/flask-network-logging.svg)](https://badge.fury.io/py/flask-network-logging)
+[![PyPI downloads](https://img.shields.io/pypi/dm/flask-network-logging.svg)](https://pypi.org/project/flask-network-logging/)
 ```

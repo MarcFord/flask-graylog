@@ -6,8 +6,8 @@ from unittest.mock import Mock, patch
 import pytest
 from flask import Flask, g
 
-from flask_graylog import GraylogExtension
-from flask_graylog.context_filter import GraylogContextFilter
+from flask_network_logging import GraylogExtension
+from flask_network_logging.context_filter import GraylogContextFilter
 
 
 class TestIntegration:
@@ -77,7 +77,7 @@ class TestIntegration:
         """Test integration with GelfTcpHandler when environment matches."""
         app.env = "test"  # Matches config
 
-        with patch("flask_graylog.extension.GelfTcpHandler") as mock_handler_class:
+        with patch("flask_network_logging.extension.GelfTcpHandler") as mock_handler_class:
             mock_handler = Mock()
             mock_handler_class.return_value = mock_handler
 

@@ -21,7 +21,7 @@ from datetime import datetime
 
 from flask import Flask, jsonify, request, g
 
-from flask_graylog import GraylogExtension
+from flask_network_logging import GraylogExtension
 
 # Create Flask application
 app = Flask(__name__)

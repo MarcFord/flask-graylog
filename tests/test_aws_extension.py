@@ -161,7 +161,7 @@ class TestAWSLogExtension:
         with patch.object(app.logger, "info") as mock_info:
             extension = AWSLogExtension(app=app)
             # The setup happens automatically during init, so check for the expected call
-            mock_info.assert_called_with("AWS CloudWatch Logs: Skipping setup in development environment")
+            mock_info.assert_called_with("AWS CloudWatch Logs: Skipping setup in test environment")
 
     @patch("flask_remote_logging.aws_extension.boto3")
     def test_init_cloudwatch_client_with_credentials(self, mock_boto3, app):

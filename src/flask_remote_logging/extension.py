@@ -90,6 +90,10 @@ class GraylogExtension(BaseLoggingExtension):
             "GRAYLOG_APP_NAME": app_name,
             "GRAYLOG_SERVICE_NAME": self.app.config.get("GRAYLOG_SERVICE_NAME", app_name),
             "GRAYLOG_ENVIRONMENT": self.app.config.get("GRAYLOG_ENVIRONMENT", "production"),
+            "FLASK_REMOTE_LOGGING_ENVIRONMENT": self.app.config.get(
+                "FLASK_REMOTE_LOGGING_ENVIRONMENT",
+                self.app.config.get("GRAYLOG_ENVIRONMENT", "production"),  # Backward compatibility
+            ),
             "GRAYLOG_EXTRA_FIELDS": self.app.config.get("GRAYLOG_EXTRA_FIELDS", True),
             "GRAYLOG_DEBUG": self.app.config.get("GRAYLOG_DEBUG", True),
             "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get(
@@ -117,7 +121,7 @@ class GraylogExtension(BaseLoggingExtension):
 
         # Flask compatibility: support both app.env (Flask 1.x) and config['ENV'] (Flask 2.0+)
         flask_env = self._get_flask_env()
-        target_env = self.app.config.get("GRAYLOG_ENVIRONMENT", "production")
+        target_env = self.config.get("FLASK_REMOTE_LOGGING_ENVIRONMENT", "production")
 
         if str(flask_env).lower() == target_env.lower():
             if GelfTcpHandler is None:
@@ -148,7 +152,8 @@ class GraylogExtension(BaseLoggingExtension):
         """
         Determine if logging setup should be skipped.
 
-        For Graylog, we never skip setup - we just use different handlers.
+        For Graylog, we never skip setup - we just use different handlers
+        based on the environment.
 
         Returns:
             False - Graylog extension always sets up logging
@@ -172,13 +177,6 @@ class GraylogExtension(BaseLoggingExtension):
             Configuration key name for middleware
         """
         return "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE"
-
-    def _get_skip_reason(self) -> str:
-        """Get the reason why setup is being skipped."""
-        if self.app:
-            flask_env = self._get_flask_env()
-            return f"Skipping setup in {flask_env} environment"
-        return "Skipping setup (no app configured)"
 
     # Keep the old _setup_logging method for backward compatibility but mark as deprecated
     def _setup_logging(self) -> None:

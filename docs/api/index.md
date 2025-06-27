@@ -32,7 +32,6 @@ The main extension classes for each logging backend:
 Filters that add request context and metadata to log records:
 
 - {class}`flask_remote_logging.FlaskRemoteLoggingContextFilter` - Request context filter
-- {class}`flask_remote_logging.FlaskRemoteLoggingContextFilter` - Alias for compatibility
 
 ### Middleware
 

@@ -123,7 +123,7 @@ app.config.update({
     'GRAYLOG_HOST': 'your-graylog-server.com',
     'GRAYLOG_PORT': 12201,
     'GRAYLOG_LEVEL': 'INFO',
-    'GRAYLOG_ENVIRONMENT': 'production'
+    'FLASK_REMOTE_LOGGING_ENVIRONMENT': 'production'  # Unified environment key
 })
 
 # Initialize extension (logging setup is automatic)
@@ -151,7 +151,7 @@ app.config.update({
     'GCP_PROJECT_ID': 'your-gcp-project-id',
     'GCP_LOG_NAME': 'flask-app',
     'GCP_LOG_LEVEL': 'INFO',
-    'GCP_ENVIRONMENT': 'production'
+    'FLASK_REMOTE_LOGGING_ENVIRONMENT': 'production'  # Unified environment key
 })
 
 # Initialize extension (logging setup is automatic)
@@ -180,7 +180,7 @@ app.config.update({
     'AWS_LOG_GROUP': '/flask-app/logs',
     'AWS_LOG_STREAM': 'app-stream',
     'AWS_LOG_LEVEL': 'INFO',
-    'AWS_ENVIRONMENT': 'production'
+    'FLASK_REMOTE_LOGGING_ENVIRONMENT': 'production'  # Unified environment key
 })
 
 # Initialize extension (logging setup is automatic)
@@ -209,7 +209,7 @@ app.config.update({
     'AZURE_WORKSPACE_KEY': 'your-workspace-key',
     'AZURE_LOG_TYPE': 'FlaskAppLogs',
     'AZURE_LOG_LEVEL': 'INFO',
-    'AZURE_ENVIRONMENT': 'production'
+    'FLASK_REMOTE_LOGGING_ENVIRONMENT': 'production'  # Unified environment key
 })
 
 # Initialize extension (logging setup is automatic)
@@ -239,7 +239,7 @@ app.config.update({
     'IBM_APP_NAME': 'your-app-name',
     'IBM_ENV': 'production',
     'IBM_LOG_LEVEL': 'INFO',
-    'IBM_ENVIRONMENT': 'production'
+    'FLASK_REMOTE_LOGGING_ENVIRONMENT': 'production'  # Unified environment key
 })
 
 # Initialize extension (logging setup is automatic)
@@ -268,7 +268,7 @@ app.config.update({
     'OCI_LOG_ID': 'ocid1.log.oc1...',
     'OCI_SOURCE': 'your-app-name',
     'OCI_LOG_LEVEL': 'INFO',
-    'OCI_ENVIRONMENT': 'production'
+    'FLASK_REMOTE_LOGGING_ENVIRONMENT': 'production'  # Unified environment key
 })
 
 # Initialize extension (logging setup is automatic)
@@ -283,7 +283,51 @@ if __name__ == '__main__':
     app.run()
 ```
 
-## Advanced Configuration
+### Unified Environment Configuration
+
+As of version 2.0, flask-remote-logging supports a unified environment configuration key across all backends for consistency and easier management:
+
+```python
+app.config.update({
+    # Unified environment configuration (recommended)
+    'FLASK_REMOTE_LOGGING_ENVIRONMENT': 'production',
+    
+    # Backend-specific configuration
+    'GRAYLOG_HOST': 'your-graylog-server.com',
+    'GRAYLOG_PORT': 12201,
+})
+```
+
+#### Migration from Backend-Specific Environment Keys
+
+The old backend-specific environment keys (`GRAYLOG_ENVIRONMENT`, `AWS_ENVIRONMENT`, etc.) are still supported for backward compatibility, but the new unified key takes precedence:
+
+```python
+# Old way (still supported)
+app.config.update({
+    'GRAYLOG_ENVIRONMENT': 'production',  # Backend-specific
+    'AWS_ENVIRONMENT': 'production',      # Backend-specific
+})
+
+# New unified way (recommended)
+app.config.update({
+    'FLASK_REMOTE_LOGGING_ENVIRONMENT': 'production',  # Works for all backends
+})
+
+# Mixed configuration (unified key takes precedence)
+app.config.update({
+    'FLASK_REMOTE_LOGGING_ENVIRONMENT': 'production',  # Used by all extensions
+    'GRAYLOG_ENVIRONMENT': 'development',              # Ignored (fallback only)
+})
+```
+
+**Benefits of the unified approach:**
+- 🔧 **Consistent configuration** across all logging backends
+- 🚀 **Easier multi-backend setup** with single environment setting
+- 📝 **Simplified configuration management** in deployment environments
+- 🔄 **Full backward compatibility** with existing configurations
+
+### Advanced Configuration
 
 ### Middleware Control
 
@@ -350,6 +394,57 @@ if __name__ == '__main__':
     app.run()
 ```
 
+## Migration Guide
+
+### Upgrading from v1.x to v2.x
+
+Version 2.0 introduces several improvements for consistency and ease of use. All changes are backward compatible.
+
+#### Context Filter Changes
+
+**v1.x (multiple aliases):**
+```python
+from flask_remote_logging import GraylogContextFilter, FRLContextFilter
+# Multiple class names were available
+```
+
+**v2.x (single canonical class):**
+```python
+from flask_remote_logging import FlaskRemoteLoggingContextFilter
+# Single canonical class name for consistency
+```
+
+The old aliases still work but are deprecated. Update your imports to use the new canonical class name.
+
+#### Environment Configuration Changes
+
+**v1.x (backend-specific keys):**
+```python
+app.config.update({
+    'GRAYLOG_ENVIRONMENT': 'production',
+    'AWS_ENVIRONMENT': 'production', 
+    'AZURE_ENVIRONMENT': 'production',
+    # Different keys for each backend
+})
+```
+
+**v2.x (unified key with fallback):**
+```python
+app.config.update({
+    # Recommended: Single unified key for all backends
+    'FLASK_REMOTE_LOGGING_ENVIRONMENT': 'production',
+    
+    # Legacy keys still work for backward compatibility
+    # 'GRAYLOG_ENVIRONMENT': 'production',  # Fallback only
+})
+```
+
+**Migration steps:**
+1. Update imports to use `FlaskRemoteLoggingContextFilter`
+2. Replace backend-specific environment keys with `FLASK_REMOTE_LOGGING_ENVIRONMENT`
+3. Test your application - old configuration should still work during transition
+4. Remove legacy configuration keys once migration is complete
+
 ## Examples
 
 Check out the comprehensive example application in the [`examples/`](examples/) directory:
@@ -406,7 +501,8 @@ These utilities handle the differences between Flask versions automatically, so 
 | `GRAYLOG_HOST` | Graylog server hostname | `localhost` |
 | `GRAYLOG_PORT` | Graylog GELF UDP port | `12201` |
 | `GRAYLOG_LEVEL` | Minimum log level | `WARNING` |
-| `GRAYLOG_ENVIRONMENT` | Environment where logs should be sent to graylog | `development` |
+| `FLASK_REMOTE_LOGGING_ENVIRONMENT` | **Unified environment key** - Environment where logs should be sent | `production` |
+| `GRAYLOG_ENVIRONMENT` | *(Deprecated)* Legacy environment key - use `FLASK_REMOTE_LOGGING_ENVIRONMENT` instead | `development` |
 | `GRAYLOG_EXTRA_FIELDS` | True to allow extra fields, False if not | True |
 | `GRAYLOG_APP_NAME` | Name of the application sending logs | `app.name` |
 | `GRAYLOG_SERVICE_NAME` | Name of the service sending logs. Useful if you have an application that is made up of multiple services | `app.name` |
@@ -420,7 +516,8 @@ These utilities handle the differences between Flask versions automatically, so 
 | `GCP_CREDENTIALS_PATH` | Path to service account JSON file (optional if using default credentials) | `None` |
 | `GCP_LOG_NAME` | Name of the log in Cloud Logging | `flask-app` |
 | `GCP_LOG_LEVEL` | Minimum log level | `WARNING` |
-| `GCP_ENVIRONMENT` | Environment where logs should be sent to GCP | `production` |
+| `FLASK_REMOTE_LOGGING_ENVIRONMENT` | **Unified environment key** - Environment where logs should be sent | `production` |
+| `GCP_ENVIRONMENT` | *(Deprecated)* Legacy environment key - use `FLASK_REMOTE_LOGGING_ENVIRONMENT` instead | `production` |
 | `GCP_APP_NAME` | Name of the application sending logs | `app.name` |
 | `GCP_SERVICE_NAME` | Name of the service sending logs | `app.name` |
 | `FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
@@ -435,7 +532,8 @@ These utilities handle the differences between Flask versions automatically, so 
 | `AWS_LOG_GROUP` | CloudWatch log group name | `/flask-app/logs` |
 | `AWS_LOG_STREAM` | CloudWatch log stream name | `app-stream` |
 | `AWS_LOG_LEVEL` | Minimum log level | `WARNING` |
-| `AWS_ENVIRONMENT` | Environment where logs should be sent to AWS | `production` |
+| `FLASK_REMOTE_LOGGING_ENVIRONMENT` | **Unified environment key** - Environment where logs should be sent | `production` |
+| `AWS_ENVIRONMENT` | *(Deprecated)* Legacy environment key - use `FLASK_REMOTE_LOGGING_ENVIRONMENT` instead | `production` |
 | `AWS_APP_NAME` | Name of the application sending logs | `app.name` |
 | `AWS_SERVICE_NAME` | Name of the service sending logs | `app.name` |
 | `FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
@@ -448,7 +546,8 @@ These utilities handle the differences between Flask versions automatically, so 
 | `AZURE_WORKSPACE_KEY` | Azure Log Analytics workspace key | Required |
 | `AZURE_LOG_TYPE` | Custom log type name in Azure Monitor | `FlaskAppLogs` |
 | `AZURE_LOG_LEVEL` | Minimum log level | `WARNING` |
-| `AZURE_ENVIRONMENT` | Environment where logs should be sent to Azure | `production` |
+| `FLASK_REMOTE_LOGGING_ENVIRONMENT` | **Unified environment key** - Environment where logs should be sent | `production` |
+| `AZURE_ENVIRONMENT` | *(Deprecated)* Legacy environment key - use `FLASK_REMOTE_LOGGING_ENVIRONMENT` instead | `production` |
 | `AZURE_TIMEOUT` | HTTP request timeout in seconds | `30` |
 | `FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
 
@@ -463,7 +562,8 @@ These utilities handle the differences between Flask versions automatically, so 
 | `IBM_IP` | IP address for log entries (optional) | `None` |
 | `IBM_MAC` | MAC address for log entries (optional) | `None` |
 | `IBM_LOG_LEVEL` | Minimum log level | `INFO` |
-| `IBM_ENVIRONMENT` | Environment where logs should be sent to IBM | `development` |
+| `FLASK_REMOTE_LOGGING_ENVIRONMENT` | **Unified environment key** - Environment where logs should be sent | `production` |
+| `IBM_ENVIRONMENT` | *(Deprecated)* Legacy environment key - use `FLASK_REMOTE_LOGGING_ENVIRONMENT` instead | `development` |
 | `IBM_URL` | IBM Cloud Logs ingestion endpoint | `https://logs.logdna.com/logs/ingest` |
 | `IBM_TIMEOUT` | HTTP request timeout in seconds | `30` |
 | `IBM_INDEX_META` | Whether metadata should be indexed/searchable | `False` |
@@ -481,7 +581,8 @@ These utilities handle the differences between Flask versions automatically, so 
 | `OCI_COMPARTMENT_ID` | OCI compartment OCID (optional) | `None` |
 | `OCI_SOURCE` | Source identifier for log entries | `flask-app` |
 | `OCI_LOG_LEVEL` | Minimum log level | `INFO` |
-| `OCI_ENVIRONMENT` | Environment where logs should be sent to OCI | `development` |
+| `FLASK_REMOTE_LOGGING_ENVIRONMENT` | **Unified environment key** - Environment where logs should be sent | `production` |
+| `OCI_ENVIRONMENT` | *(Deprecated)* Legacy environment key - use `FLASK_REMOTE_LOGGING_ENVIRONMENT` instead | `development` |
 | `FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
 
 

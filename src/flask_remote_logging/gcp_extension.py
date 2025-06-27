@@ -84,6 +84,10 @@ class GCPLogExtension(BaseLoggingExtension):
             "GCP_APP_NAME": app_name,
             "GCP_SERVICE_NAME": self.app.config.get("GCP_SERVICE_NAME", app_name),
             "GCP_ENVIRONMENT": self.app.config.get("GCP_ENVIRONMENT", "production"),
+            "FLASK_REMOTE_LOGGING_ENVIRONMENT": self.app.config.get(
+                "FLASK_REMOTE_LOGGING_ENVIRONMENT",
+                self.app.config.get("GCP_ENVIRONMENT", "production"),  # Backward compatibility
+            ),
             "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get("FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE"),
         }
 
@@ -143,14 +147,18 @@ class GCPLogExtension(BaseLoggingExtension):
         """
         Determine if logging setup should be skipped based on environment or config.
 
+        GCP extension skips setup only if:
+        - GCP_PROJECT_ID is not configured AND
+        - Current Flask environment doesn't match target environment
+
         Returns:
             True if setup should be skipped, False otherwise
         """
         # Only skip if GCP is explicitly not configured and environment doesn't match
-        environment = self.config.get("GCP_ENVIRONMENT", "production")
+        environment = self.config.get("FLASK_REMOTE_LOGGING_ENVIRONMENT", "production")
         if not self.config.get("GCP_PROJECT_ID") and self.app:
             app_env = self._get_flask_env()
-            return str(app_env).lower() != environment.lower()
+            return bool(str(app_env).lower() != environment.lower())
         return False
 
     def _get_extension_name(self) -> str:
@@ -170,11 +178,6 @@ class GCPLogExtension(BaseLoggingExtension):
             Configuration key name for middleware override
         """
         return "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE"
-
-    def _get_skip_reason(self) -> str:
-        """Get the reason why setup is being skipped."""
-        environment = self.config.get("GCP_ENVIRONMENT", "production")
-        return f"Skipping setup in {environment} environment"
 
     def init_app(self, app: Flask) -> None:
         """

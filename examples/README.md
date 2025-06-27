@@ -158,7 +158,8 @@ def create_app():
 | `GRAYLOG_HOST` | Graylog server hostname | `localhost` |
 | `GRAYLOG_PORT` | Graylog GELF UDP port | `12201` |
 | `GRAYLOG_LEVEL` | Minimum log level | `INFO` |
-| `GRAYLOG_ENVIRONMENT` | Environment name for filtering | `development` |
+| `FLASK_REMOTE_LOGGING_ENVIRONMENT` | **Unified environment key** - Environment name for filtering | `development` |
+| `GRAYLOG_ENVIRONMENT` | *(Deprecated)* Legacy environment key - use `FLASK_REMOTE_LOGGING_ENVIRONMENT` instead | `development` |
 | `GRAYLOG_FACILITY` | Facility name for grouping | `flask-example` |
 | `DATACENTER` | Datacenter identifier | `local` |
 
@@ -171,7 +172,9 @@ app.config.update({
     'GRAYLOG_HOST': os.getenv('GRAYLOG_HOST', 'localhost'),
     'GRAYLOG_PORT': int(os.getenv('GRAYLOG_PORT', 12201)),
     'GRAYLOG_LEVEL': os.getenv('GRAYLOG_LEVEL', 'INFO'),
-    'GRAYLOG_ENVIRONMENT': os.getenv('GRAYLOG_ENVIRONMENT', 'development')
+    # New unified environment key (recommended)
+    'FLASK_REMOTE_LOGGING_ENVIRONMENT': os.getenv('FLASK_REMOTE_LOGGING_ENVIRONMENT', 'development')
+    # Legacy key 'GRAYLOG_ENVIRONMENT' still works for backward compatibility
 })
 ```
 
@@ -309,7 +312,7 @@ The extension automatically adds context to your log messages:
 ## Production Considerations
 
 1. **Log Level**: Set `GRAYLOG_LEVEL=WARNING` or `ERROR` in production
-2. **Environment Filtering**: Use `GRAYLOG_ENVIRONMENT` to control log flow
+2. **Environment Filtering**: Use `FLASK_REMOTE_LOGGING_ENVIRONMENT` to control log flow
 3. **Performance**: Monitor logging overhead in high-traffic applications
 4. **Security**: Don't log sensitive information (passwords, tokens, etc.)
 5. **Storage**: Configure Graylog retention policies for log management

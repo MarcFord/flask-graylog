@@ -239,15 +239,28 @@ class BaseLoggingExtension(ABC):
         """
         pass
 
-    @abstractmethod
     def _should_skip_setup(self) -> bool:
         """
         Determine if logging setup should be skipped based on environment or config.
 
+        This method checks if the current Flask environment matches the configured
+        target environment for remote logging. Extensions can override this for
+        custom logic, but most should use this default implementation.
+
         Returns:
             True if setup should be skipped, False otherwise
         """
-        pass
+        if not self.app:
+            return True
+
+        # Get the target environment for this extension
+        target_environment = self.config.get("FLASK_REMOTE_LOGGING_ENVIRONMENT", "production")
+
+        # Get the current Flask environment
+        current_environment = self._get_flask_env()
+
+        # Skip setup if environments don't match
+        return str(current_environment).lower() != str(target_environment).lower()
 
     @abstractmethod
     def _get_extension_name(self) -> str:
@@ -269,12 +282,17 @@ class BaseLoggingExtension(ABC):
         """
         pass
 
-    @abstractmethod
     def _get_skip_reason(self) -> str:
         """
         Get the reason why setup is being skipped.
 
+        This default implementation returns a message about the current environment.
+        Extensions can override this method if they need custom skip reason logic.
+
         Returns:
             Human-readable reason for skipping setup
         """
-        pass
+        if self.app:
+            flask_env = self._get_flask_env()
+            return f"Skipping setup in {flask_env} environment"
+        return "Skipping setup (no app configured)"

@@ -124,6 +124,12 @@ class AzureLogExtension(BaseLoggingExtension):
             "AZURE_ENVIRONMENT": self.app.config.get(
                 "AZURE_ENVIRONMENT", os.getenv("AZURE_ENVIRONMENT", "development")
             ),
+            "FLASK_REMOTE_LOGGING_ENVIRONMENT": self.app.config.get(
+                "FLASK_REMOTE_LOGGING_ENVIRONMENT",
+                self.app.config.get(
+                    "AZURE_ENVIRONMENT", os.getenv("AZURE_ENVIRONMENT", "development")
+                ),  # Backward compatibility
+            ),
             "AZURE_TIMEOUT": self.app.config.get("AZURE_TIMEOUT", os.getenv("AZURE_TIMEOUT", "30")),
             "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get(
                 "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE", None
@@ -160,8 +166,14 @@ class AzureLogExtension(BaseLoggingExtension):
             return None
 
     def _should_skip_setup(self) -> bool:
-        """Determine if setup should be skipped based on environment."""
-        environment = self.config.get("AZURE_ENVIRONMENT", "development")
+        """
+        Determine if setup should be skipped based on environment and configuration.
+
+        Azure extension skips setup unless:
+        - Environment is 'azure' or 'production', OR
+        - AZURE_WORKSPACE_ID is explicitly configured
+        """
+        environment = self.config.get("FLASK_REMOTE_LOGGING_ENVIRONMENT", "development")
         return environment not in ["azure", "production"] and not self.config.get("AZURE_WORKSPACE_ID")
 
     def _get_extension_name(self) -> str:
@@ -171,11 +183,6 @@ class AzureLogExtension(BaseLoggingExtension):
     def _get_middleware_config_key(self) -> str:
         """Get the configuration key for middleware override."""
         return "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE"
-
-    def _get_skip_reason(self) -> str:
-        """Get the reason why setup is being skipped."""
-        environment = self.config.get("AZURE_ENVIRONMENT", "development")
-        return f"Skipping setup in {environment} environment"
 
     # Azure-specific helper methods
 

@@ -122,6 +122,12 @@ class AWSLogExtension(BaseLoggingExtension):
             "AWS_LOG_STREAM": self.app.config.get("AWS_LOG_STREAM", os.getenv("AWS_LOG_STREAM")),
             "AWS_LOG_LEVEL": self.app.config.get("AWS_LOG_LEVEL", os.getenv("AWS_LOG_LEVEL", "INFO")),
             "AWS_ENVIRONMENT": self.app.config.get("AWS_ENVIRONMENT", os.getenv("AWS_ENVIRONMENT", "development")),
+            "FLASK_REMOTE_LOGGING_ENVIRONMENT": self.app.config.get(
+                "FLASK_REMOTE_LOGGING_ENVIRONMENT",
+                self.app.config.get(
+                    "AWS_ENVIRONMENT", os.getenv("AWS_ENVIRONMENT", "development")
+                ),  # Backward compatibility
+            ),
             "AWS_CREATE_LOG_GROUP": self.app.config.get(
                 "AWS_CREATE_LOG_GROUP", os.getenv("AWS_CREATE_LOG_GROUP", "true").lower() == "true"
             ),
@@ -146,7 +152,7 @@ class AWSLogExtension(BaseLoggingExtension):
     def _create_log_handler(self) -> Optional[logging.Handler]:
         """Create the appropriate log handler for AWS CloudWatch."""
         # Only set up CloudWatch logging in AWS environments or when explicitly configured
-        environment = self.config.get("AWS_ENVIRONMENT", "development")
+        environment = self.config.get("FLASK_REMOTE_LOGGING_ENVIRONMENT", "development")
 
         if environment in ["aws", "production"] or self.config.get("AWS_LOG_GROUP"):
             if self.cloudwatch_client and self.log_group:
@@ -170,8 +176,14 @@ class AWSLogExtension(BaseLoggingExtension):
             return None
 
     def _should_skip_setup(self) -> bool:
-        """Determine if setup should be skipped based on environment."""
-        environment = self.config.get("AWS_ENVIRONMENT", "development")
+        """
+        Determine if setup should be skipped based on environment and configuration.
+
+        AWS extension skips setup unless:
+        - Environment is 'aws' or 'production', OR
+        - AWS_LOG_GROUP is explicitly configured
+        """
+        environment = self.config.get("FLASK_REMOTE_LOGGING_ENVIRONMENT", "development")
         return environment not in ["aws", "production"] and not self.config.get("AWS_LOG_GROUP")
 
     def _get_extension_name(self) -> str:
@@ -181,11 +193,6 @@ class AWSLogExtension(BaseLoggingExtension):
     def _get_middleware_config_key(self) -> str:
         """Get the configuration key for middleware override."""
         return "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE"
-
-    def _get_skip_reason(self) -> str:
-        """Get the reason why setup is being skipped."""
-        environment = self.config.get("AWS_ENVIRONMENT", "development")
-        return f"Skipping setup in {environment} environment"
 
     # AWS-specific helper methods
 

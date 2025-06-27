@@ -35,7 +35,9 @@ app.config.update({
     # Log level configuration
     'GRAYLOG_LEVEL': os.getenv('GRAYLOG_LEVEL', 'INFO'),
     # Environment configuration (logs will only be sent if app.env matches this)
-    'GRAYLOG_ENVIRONMENT': os.getenv('GRAYLOG_ENVIRONMENT', 'development'),
+    # Note: FLASK_REMOTE_LOGGING_ENVIRONMENT is the new unified key (v2.0+)
+    # Old key GRAYLOG_ENVIRONMENT still works for backward compatibility
+    'FLASK_REMOTE_LOGGING_ENVIRONMENT': os.getenv('FLASK_REMOTE_LOGGING_ENVIRONMENT', 'development'),
 })
 
 # Initialize Graylog extension

@@ -144,7 +144,7 @@ class TestOCILogExtension:
 
     def test_setup_logging_with_development_environment(self, app):
         """Test logging setup with development environment (skipped)."""
-        app.config.update({"OCI_ENVIRONMENT": "development"})
+        app.config.update({"FLASK_REMOTE_LOGGING_ENVIRONMENT": "development"})
 
         extension = OCILogExtension(app=app)
 
@@ -236,14 +236,17 @@ class TestOCILogExtension:
     def test_should_skip_setup_development_environment(self):
         """Test setup skipping in development environment."""
         extension = OCILogExtension()
-        extension.config = {"OCI_ENVIRONMENT": "development"}
+        extension.config = {"FLASK_REMOTE_LOGGING_ENVIRONMENT": "development"}
 
         assert extension._should_skip_setup() is True
 
     def test_should_skip_setup_production_environment(self):
         """Test setup not skipping in production environment."""
         extension = OCILogExtension()
-        extension.config = {"OCI_ENVIRONMENT": "production", "OCI_LOG_GROUP_ID": "ocid1.loggroup.oc1..."}
+        extension.config = {
+            "FLASK_REMOTE_LOGGING_ENVIRONMENT": "production",
+            "OCI_LOG_GROUP_ID": "ocid1.loggroup.oc1...",
+        }
 
         assert extension._should_skip_setup() is False
 
@@ -260,8 +263,8 @@ class TestOCILogExtension:
     def test_skip_reason(self):
         """Test skip reason getter."""
         extension = OCILogExtension()
-        extension.config = {"OCI_ENVIRONMENT": "development"}
-        assert "development" in extension._get_skip_reason()
+        extension.config = {"FLASK_REMOTE_LOGGING_ENVIRONMENT": "development"}
+        assert "no app configured" in extension._get_skip_reason()
 
 
 class TestOCILogHandler:

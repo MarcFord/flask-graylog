@@ -109,6 +109,12 @@ class IBMLogExtension(BaseLoggingExtension):
                 "IBM_URL", os.getenv("IBM_URL", "https://logs.us-south.logging.cloud.ibm.com/logs/ingest")
             ),
             "IBM_ENVIRONMENT": self.app.config.get("IBM_ENVIRONMENT", os.getenv("IBM_ENVIRONMENT", "production")),
+            "FLASK_REMOTE_LOGGING_ENVIRONMENT": self.app.config.get(
+                "FLASK_REMOTE_LOGGING_ENVIRONMENT",
+                self.app.config.get(
+                    "IBM_ENVIRONMENT", os.getenv("IBM_ENVIRONMENT", "production")
+                ),  # Backward compatibility
+            ),
             "IBM_MAC": self.app.config.get("IBM_MAC", os.getenv("IBM_MAC")),
             "IBM_IP": self.app.config.get("IBM_IP", os.getenv("IBM_IP")),
             "IBM_TAGS": self.app.config.get("IBM_TAGS", os.getenv("IBM_TAGS", "")),
@@ -155,8 +161,14 @@ class IBMLogExtension(BaseLoggingExtension):
             return handler
 
     def _should_skip_setup(self) -> bool:
-        """Determine if logging setup should be skipped."""
-        environment = self.config.get("IBM_ENVIRONMENT", "production")
+        """
+        Determine if setup should be skipped based on environment and configuration.
+
+        IBM extension skips setup unless:
+        - Environment is 'ibm' or 'production', OR
+        - IBM_INGESTION_KEY is explicitly configured
+        """
+        environment = self.config.get("FLASK_REMOTE_LOGGING_ENVIRONMENT", "production")
         return environment not in ["ibm", "production"] and not self.config.get("IBM_INGESTION_KEY")
 
     def _get_extension_name(self) -> str:
@@ -166,11 +178,6 @@ class IBMLogExtension(BaseLoggingExtension):
     def _get_middleware_config_key(self) -> str:
         """Get the configuration key for middleware override."""
         return "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE"
-
-    def _get_skip_reason(self) -> str:
-        """Get the reason why setup is being skipped."""
-        environment = self.config.get("IBM_ENVIRONMENT", "production")
-        return f"Skipping setup in {environment} environment"
 
     def _configure_logger(self, logger: logging.Logger, level: int) -> None:
         """

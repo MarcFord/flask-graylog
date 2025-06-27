@@ -111,6 +111,12 @@ class OCILogExtension(BaseLoggingExtension):
             "OCI_APP_NAME": app_name,
             "OCI_LOG_LEVEL": self.app.config.get("OCI_LOG_LEVEL", os.getenv("OCI_LOG_LEVEL", logging.INFO)),
             "OCI_ENVIRONMENT": self.app.config.get("OCI_ENVIRONMENT", os.getenv("OCI_ENVIRONMENT", "production")),
+            "FLASK_REMOTE_LOGGING_ENVIRONMENT": self.app.config.get(
+                "FLASK_REMOTE_LOGGING_ENVIRONMENT",
+                self.app.config.get(
+                    "OCI_ENVIRONMENT", os.getenv("OCI_ENVIRONMENT", "production")
+                ),  # Backward compatibility
+            ),
             "OCI_REGION": self.app.config.get("OCI_REGION", os.getenv("OCI_REGION")),
             "OCI_COMPARTMENT_ID": self.app.config.get("OCI_COMPARTMENT_ID", os.getenv("OCI_COMPARTMENT_ID")),
             "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get("FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE"),
@@ -162,8 +168,14 @@ class OCILogExtension(BaseLoggingExtension):
             return handler
 
     def _should_skip_setup(self) -> bool:
-        """Determine if logging setup should be skipped."""
-        environment = self.config.get("OCI_ENVIRONMENT", "production")
+        """
+        Determine if setup should be skipped based on environment and configuration.
+
+        OCI extension skips setup unless:
+        - Environment is 'oci' or 'production', OR
+        - OCI_LOG_GROUP_ID is explicitly configured
+        """
+        environment = self.config.get("FLASK_REMOTE_LOGGING_ENVIRONMENT", "production")
         return environment not in ["oci", "production"] and not self.config.get("OCI_LOG_GROUP_ID")
 
     def _get_extension_name(self) -> str:
@@ -173,11 +185,6 @@ class OCILogExtension(BaseLoggingExtension):
     def _get_middleware_config_key(self) -> str:
         """Get the configuration key for middleware override."""
         return "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE"
-
-    def _get_skip_reason(self) -> str:
-        """Get the reason why setup is being skipped."""
-        environment = self.config.get("OCI_ENVIRONMENT", "production")
-        return f"Skipping setup in {environment} environment"
 
 
 class OCILogHandler(logging.Handler):

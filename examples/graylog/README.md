@@ -31,7 +31,8 @@ Edit the `.env` file to configure your Graylog server:
 - `GRAYLOG_HOST`: Your Graylog server hostname
 - `GRAYLOG_PORT`: GELF UDP port (usually 12201)
 - `GRAYLOG_LEVEL`: Minimum log level (DEBUG, INFO, WARNING, ERROR)
-- `GRAYLOG_ENVIRONMENT`: Environment name for filtering
+- `FLASK_REMOTE_LOGGING_ENVIRONMENT`: **Unified environment key** - Environment name for filtering
+- `GRAYLOG_ENVIRONMENT`: *(Deprecated)* Legacy environment key - use `FLASK_REMOTE_LOGGING_ENVIRONMENT` instead
 
 ## Features Demonstrated
 

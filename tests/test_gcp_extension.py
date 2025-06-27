@@ -97,6 +97,7 @@ class TestGCPLogExtension:
             "GCP_APP_NAME": "test_app",  # From the test app fixture
             "GCP_SERVICE_NAME": "test_app",
             "GCP_ENVIRONMENT": "production",
+            "FLASK_REMOTE_LOGGING_ENVIRONMENT": "production",  # New standardized key
             "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE": None,
         }
 
@@ -131,6 +132,7 @@ class TestGCPLogExtension:
             "GCP_APP_NAME": "custom-app",
             "GCP_SERVICE_NAME": "custom-service",
             "GCP_ENVIRONMENT": "staging",
+            "FLASK_REMOTE_LOGGING_ENVIRONMENT": "staging",  # New standardized key
             "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE": None,
         }
 

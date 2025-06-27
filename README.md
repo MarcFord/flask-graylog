@@ -5,7 +5,7 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MarcFord/flask-network-logging/blob/main/LICENSE)
 
-A Flask extension for sending application logs to remote logging services including Graylog via GELF (Graylog Extended Log Format) and Google Cloud Logging.
+A Flask extension for sending application logs to remote logging services including Graylog via GELF (Graylog Extended Log Format), Google Cloud Logging, and AWS CloudWatch Logs.
 
 > **📊 Badge Status**: The CI badge shows the latest build status. The codecov badge will update once coverage reports are uploaded to codecov.io. PyPI badges will appear after the first release.
 
@@ -20,6 +20,7 @@ A Flask extension for sending application logs to remote logging services includ
 - 🐍 Python 3.9+ support
 - 📡 Support for Graylog via GELF
 - ☁️ Support for Google Cloud Logging
+- 🚀 Support for AWS CloudWatch Logs
 
 ## Installation
 
@@ -87,6 +88,36 @@ if __name__ == '__main__':
     app.run()
 ```
 
+### AWS CloudWatch Logs Integration
+
+```python
+from flask import Flask
+from flask_network_logging import AWSLog
+
+app = Flask(__name__)
+
+# Configure AWS CloudWatch Logs
+app.config.update({
+    'AWS_REGION': 'us-east-1',
+    'AWS_LOG_GROUP': '/flask-app/logs',
+    'AWS_LOG_STREAM': 'app-stream',
+    'AWS_LOG_LEVEL': 'INFO',
+    'AWS_ENVIRONMENT': 'production'
+})
+
+# Initialize extension
+aws_log = AWSLog(app)
+aws_log._setup_logging()
+
+@app.route('/')
+def hello():
+    app.logger.info("Hello world endpoint accessed")
+    return "Hello, World!"
+
+if __name__ == '__main__':
+    app.run()
+```
+
 ## Examples
 
 Check out the comprehensive example application in the [`examples/`](examples/) directory:
@@ -127,6 +158,20 @@ cd examples/
 | `GCP_ENVIRONMENT` | Environment where logs should be sent to GCP | `production` |
 | `GCP_APP_NAME` | Name of the application sending logs | `app.name` |
 | `GCP_SERVICE_NAME` | Name of the service sending logs | `app.name` |
+
+### AWS CloudWatch Logs Configuration
+
+| Configuration Key | Description | Default |
+|-------------------|-------------|---------|
+| `AWS_REGION` | AWS region for CloudWatch Logs | `us-east-1` |
+| `AWS_ACCESS_KEY_ID` | AWS access key (optional if using IAM roles/profiles) | `None` |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key (optional if using IAM roles/profiles) | `None` |
+| `AWS_LOG_GROUP` | CloudWatch log group name | `/flask-app/logs` |
+| `AWS_LOG_STREAM` | CloudWatch log stream name | `app-stream` |
+| `AWS_LOG_LEVEL` | Minimum log level | `WARNING` |
+| `AWS_ENVIRONMENT` | Environment where logs should be sent to AWS | `production` |
+| `AWS_APP_NAME` | Name of the application sending logs | `app.name` |
+| `AWS_SERVICE_NAME` | Name of the service sending logs | `app.name` |
 
 
 ## Development

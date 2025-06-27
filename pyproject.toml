@@ -1,7 +1,7 @@
 [project]
 name = "flask-network-logging"
 dynamic = ["version"]
-description = "Flask extension for sending logs to remote logging services including Graylog and Google Cloud Logging."
+description = "Flask extension for sending logs to remote logging services including Graylog, Google Cloud Logging, and AWS CloudWatch Logs."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
@@ -11,7 +11,7 @@ authors = [
 maintainers = [
     { name = "Marc Ford", email = "thenixninja@gmail.com" }
 ]
-keywords = ["flask", "graylog", "gelf", "logging", "extension", "google-cloud-logging", "gcp", "remote-logging"]
+keywords = ["flask", "graylog", "gelf", "logging", "extension", "google-cloud-logging", "gcp", "aws", "cloudwatch", "remote-logging"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -31,6 +31,7 @@ dependencies = [
     "user-agents>=2.0.0",
     "MarkupSafe<2.1.0",
     "google-cloud-logging>=3.0.0",
+    "boto3>=1.26.0",
 ]
 
 [project.urls]

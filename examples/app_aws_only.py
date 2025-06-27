@@ -1,14 +1,11 @@
 """
-Flask Network Logging Example Application
+Flask Network Logging Example Application - AWS CloudWatch Only
 
 This example demonstrates how to use the flask-network-logging extension to send logs
-to multiple remote logging services from a Flask application.
+to AWS CloudWatch Logs from a Flask application.
 
 Features demonstrated:
-- Graylog setup and configuration
-- Google Cloud Logging setup and configuration  
 - AWS CloudWatch Logs setup and configuration
-- Using multiple extensions simultaneously
 - Different log levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 - Custom fields in log messages
 - Error handling with automatic logging
@@ -24,26 +21,13 @@ from datetime import datetime
 
 from flask import Flask, jsonify, request, g
 
-from flask_network_logging import GraylogExtension, GCPLogExtension, AWSLogExtension
+from flask_network_logging import AWSLogExtension
 
 # Create Flask application
 app = Flask(__name__)
 
-# Configuration for multiple logging backends
+# Configuration for AWS CloudWatch Logs
 app.config.update({
-    # Graylog server configuration
-    'GRAYLOG_HOST': os.getenv('GRAYLOG_HOST', 'localhost'),
-    'GRAYLOG_PORT': int(os.getenv('GRAYLOG_PORT', 12201)),
-    'GRAYLOG_LEVEL': os.getenv('GRAYLOG_LEVEL', 'INFO'),
-    'GRAYLOG_ENVIRONMENT': os.getenv('GRAYLOG_ENVIRONMENT', 'development'),
-    
-    # Google Cloud Logging configuration
-    'GCP_PROJECT_ID': os.getenv('GCP_PROJECT_ID'),
-    'GCP_CREDENTIALS_PATH': os.getenv('GCP_CREDENTIALS_PATH'),
-    'GCP_LOG_NAME': os.getenv('GCP_LOG_NAME', 'flask-network-logging-example'),
-    'GCP_LOG_LEVEL': os.getenv('GCP_LOG_LEVEL', 'INFO'),
-    'GCP_ENVIRONMENT': os.getenv('GCP_ENVIRONMENT', 'development'),
-    
     # AWS CloudWatch Logs configuration
     'AWS_REGION': os.getenv('AWS_REGION', 'us-east-1'),
     'AWS_ACCESS_KEY_ID': os.getenv('AWS_ACCESS_KEY_ID'),
@@ -52,16 +36,14 @@ app.config.update({
     'AWS_LOG_STREAM': os.getenv('AWS_LOG_STREAM', f'example-stream-{datetime.now().strftime("%Y-%m-%d")}'),
     'AWS_LOG_LEVEL': os.getenv('AWS_LOG_LEVEL', 'INFO'),
     'AWS_ENVIRONMENT': os.getenv('AWS_ENVIRONMENT', 'development'),
+    'AWS_CREATE_LOG_GROUP': os.getenv('AWS_CREATE_LOG_GROUP', 'true').lower() == 'true',
+    'AWS_CREATE_LOG_STREAM': os.getenv('AWS_CREATE_LOG_STREAM', 'true').lower() == 'true',
 })
 
-# Initialize all logging extensions
-graylog = GraylogExtension(app)
-gcp_log = GCPLogExtension(app)
+# Initialize AWS CloudWatch logging extension
 aws_log = AWSLogExtension(app)
 
-# Setup logging for all extensions
-graylog._setup_logging()
-gcp_log._setup_logging()
+# Setup logging
 aws_log._setup_logging()
 
 # Sample data for demonstration
@@ -107,6 +89,8 @@ def before_request():
             'request_method': request.method,
             'request_path': request.path,
             'user_agent': request.user_agent.string,
+            'aws_log_group': app.config.get('AWS_LOG_GROUP'),
+            'aws_log_stream': app.config.get('AWS_LOG_STREAM'),
         }
     )
 
@@ -133,12 +117,18 @@ def after_request(response):
 @app.route('/')
 def home():
     """Home endpoint with basic information."""
-    app.logger.info("Home page accessed")
+    app.logger.info("Home page accessed - AWS CloudWatch Logs example")
     
     return jsonify({
-        'message': 'Flask Network Logging Example',
+        'message': 'Flask Network Logging - AWS CloudWatch Example',
         'version': '1.0.0',
-        'logging_backends': ['Graylog', 'Google Cloud Logging', 'AWS CloudWatch Logs'],
+        'logging_backend': 'AWS CloudWatch Logs',
+        'aws_config': {
+            'region': app.config.get('AWS_REGION'),
+            'log_group': app.config.get('AWS_LOG_GROUP'),
+            'log_stream': app.config.get('AWS_LOG_STREAM'),
+            'environment': app.config.get('AWS_ENVIRONMENT')
+        },
         'endpoints': [
             '/users',
             '/products', 
@@ -153,10 +143,11 @@ def home():
 def get_users():
     """Get all users - demonstrates INFO level logging."""
     app.logger.info(
-        "Users endpoint accessed",
+        "Users endpoint accessed via AWS CloudWatch",
         extra={
             'endpoint': '/users',
             'total_users': len(USERS),
+            'logging_backend': 'aws_cloudwatch',
         }
     )
     
@@ -173,21 +164,23 @@ def get_user(user_id):
     
     if user:
         app.logger.info(
-            f"User {user_id} retrieved successfully",
+            f"User {user_id} retrieved successfully via AWS CloudWatch",
             extra={
                 'endpoint': '/users/<id>',
                 'user_id': user_id,
                 'user_name': user['name'],
+                'logging_backend': 'aws_cloudwatch',
             }
         )
         return jsonify(user)
     else:
         app.logger.warning(
-            f"User {user_id} not found",
+            f"User {user_id} not found - AWS CloudWatch logging",
             extra={
                 'endpoint': '/users/<id>',
                 'user_id': user_id,
                 'error_type': 'user_not_found',
+                'logging_backend': 'aws_cloudwatch',
             }
         )
         return jsonify({'error': 'User not found'}), 404
@@ -201,12 +194,13 @@ def get_products():
     if category:
         filtered_products = [p for p in PRODUCTS if p['category'].lower() == category.lower()]
         app.logger.info(
-            f"Products filtered by category: {category}",
+            f"Products filtered by category: {category} - AWS CloudWatch",
             extra={
                 'endpoint': '/products',
                 'filter_category': category,
                 'filtered_count': len(filtered_products),
                 'total_products': len(PRODUCTS),
+                'logging_backend': 'aws_cloudwatch',
             }
         )
         return jsonify({
@@ -216,10 +210,11 @@ def get_products():
         })
     else:
         app.logger.info(
-            "All products retrieved",
+            "All products retrieved via AWS CloudWatch",
             extra={
                 'endpoint': '/products',
                 'total_products': len(PRODUCTS),
+                'logging_backend': 'aws_cloudwatch',
             }
         )
         return jsonify({
@@ -230,67 +225,74 @@ def get_products():
 
 @app.route('/test-logs')
 def test_logs():
-    """Test endpoint to demonstrate different log levels."""
+    """Test endpoint to demonstrate different log levels with AWS CloudWatch."""
     
     # DEBUG level
     app.logger.debug(
-        "Debug message example",
+        "Debug message example - AWS CloudWatch",
         extra={
             'log_level_test': True,
             'test_type': 'debug',
             'timestamp': datetime.now().isoformat(),
+            'logging_backend': 'aws_cloudwatch',
         }
     )
     
     # INFO level
     app.logger.info(
-        "Info message example",
+        "Info message example - AWS CloudWatch",
         extra={
             'log_level_test': True,
             'test_type': 'info',
             'custom_data': {'key1': 'value1', 'key2': 42},
+            'logging_backend': 'aws_cloudwatch',
         }
     )
     
     # WARNING level
     app.logger.warning(
-        "Warning message example",
+        "Warning message example - AWS CloudWatch",
         extra={
             'log_level_test': True,
             'test_type': 'warning',
             'warning_reason': 'demonstration_purpose',
+            'logging_backend': 'aws_cloudwatch',
         }
     )
     
     # ERROR level (without raising exception)
     app.logger.error(
-        "Error message example",
+        "Error message example - AWS CloudWatch",
         extra={
             'log_level_test': True,
             'test_type': 'error',
             'error_code': 'DEMO_ERROR',
             'severity': 'medium',
+            'logging_backend': 'aws_cloudwatch',
         }
     )
     
     return jsonify({
-        'message': 'Log level test completed',
+        'message': 'AWS CloudWatch log level test completed',
         'levels_tested': ['DEBUG', 'INFO', 'WARNING', 'ERROR'],
-        'note': 'Check your Graylog, Google Cloud Logging, and AWS CloudWatch for these messages'
+        'note': 'Check your AWS CloudWatch Logs console for these messages',
+        'log_group': app.config.get('AWS_LOG_GROUP'),
+        'log_stream': app.config.get('AWS_LOG_STREAM')
     })
 
 
 @app.route('/test-error')
 def test_error():
-    """Test endpoint to demonstrate error logging with exceptions."""
+    """Test endpoint to demonstrate error logging with exceptions in AWS CloudWatch."""
     
     error_type = request.args.get('type', 'generic')
     
     app.logger.info(
-        f"Error test requested: {error_type}",
+        f"AWS CloudWatch error test requested: {error_type}",
         extra={
             'endpoint': '/test-error',
             'error_type': error_type,
+            'logging_backend': 'aws_cloudwatch',
         }
     )
     
@@ -307,12 +309,13 @@ def test_error():
             
     except Exception as e:
         app.logger.exception(
-            f"Exception occurred in error test: {str(e)}",
+            f"Exception occurred in AWS CloudWatch error test: {str(e)}",
             extra={
                 'endpoint': '/test-error',
                 'error_type': error_type,
                 'exception_type': type(e).__name__,
                 'exception_message': str(e),
+                'logging_backend': 'aws_cloudwatch',
             }
         )
         
@@ -320,7 +323,9 @@ def test_error():
             'error': 'Test exception occurred',
             'type': type(e).__name__,
             'message': str(e),
-            'note': 'This is a test error for logging demonstration'
+            'note': 'This is a test error for AWS CloudWatch logging demonstration',
+            'log_group': app.config.get('AWS_LOG_GROUP'),
+            'log_stream': app.config.get('AWS_LOG_STREAM')
         }), 500
     
     return jsonify({'message': 'No error occurred'})
@@ -329,16 +334,20 @@ def test_error():
 @app.route('/health')
 def health_check():
     """Health check endpoint."""
-    app.logger.debug("Health check performed")
+    app.logger.debug("Health check performed - AWS CloudWatch")
+    
+    # Check AWS CloudWatch configuration
+    aws_configured = bool(app.config.get('AWS_LOG_GROUP'))
     
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
         'uptime': 'N/A',  # In real app, calculate actual uptime
         'logging_status': {
-            'graylog': 'configured',
-            'gcp': 'configured' if app.config.get('GCP_PROJECT_ID') else 'not_configured',
-            'aws': 'configured' if app.config.get('AWS_LOG_GROUP') else 'not_configured'
+            'aws_cloudwatch': 'configured' if aws_configured else 'not_configured',
+            'log_group': app.config.get('AWS_LOG_GROUP'),
+            'log_stream': app.config.get('AWS_LOG_STREAM'),
+            'region': app.config.get('AWS_REGION')
         }
     })
 
@@ -347,11 +356,12 @@ def health_check():
 def not_found(error):
     """Handle 404 errors."""
     app.logger.warning(
-        f"404 error: {request.path} not found",
+        f"404 error: {request.path} not found - AWS CloudWatch",
         extra={
             'error_type': '404',
             'requested_path': request.path,
             'request_method': request.method,
+            'logging_backend': 'aws_cloudwatch',
         }
     )
     
@@ -366,12 +376,13 @@ def not_found(error):
 def internal_error(error):
     """Handle 500 errors."""
     app.logger.error(
-        f"Internal server error: {str(error)}",
+        f"Internal server error: {str(error)} - AWS CloudWatch",
         extra={
             'error_type': '500',
             'error_message': str(error),
             'request_path': request.path,
             'request_method': request.method,
+            'logging_backend': 'aws_cloudwatch',
         }
     )
     
@@ -382,20 +393,19 @@ def internal_error(error):
 
 
 if __name__ == '__main__':
-    # Configure logging extensions with user context
-    graylog.get_current_user = get_current_user
-    gcp_log.get_current_user = get_current_user
+    # Configure logging extension with user context
     aws_log.get_current_user = get_current_user
     
     # Log application startup
     app.logger.info(
-        "Flask Network Logging Example application starting",
+        "Flask Network Logging AWS CloudWatch Example application starting",
         extra={
             'app_name': app.name,
             'debug_mode': app.debug,
-            'graylog_host': app.config.get('GRAYLOG_HOST'),
-            'gcp_project': app.config.get('GCP_PROJECT_ID', 'not_configured'),
-            'aws_log_group': app.config.get('AWS_LOG_GROUP', 'not_configured'),
+            'aws_region': app.config.get('AWS_REGION'),
+            'aws_log_group': app.config.get('AWS_LOG_GROUP'),
+            'aws_log_stream': app.config.get('AWS_LOG_STREAM'),
+            'logging_backend': 'aws_cloudwatch',
         }
     )
     

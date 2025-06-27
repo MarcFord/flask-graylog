@@ -219,6 +219,7 @@ class GraylogContextFilter(logging.Filter):
                 # Handle cases where request.values or to_dict() are missing/broken
                 log_record.get_params = "Error accessing request parameters"
         else:
+            log_record.get_params = "No request context"
             log_record.no_request = "True" if not hasattr(log_record, "no_request") else log_record.no_request
 
     def _add_request_id(self, log_record: logging.LogRecord) -> None:

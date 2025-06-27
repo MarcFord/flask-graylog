@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, cast
 
 from flask import Flask
 
@@ -126,14 +126,17 @@ class GraylogExtension(BaseLoggingExtension):
                     "Install it with: pip install flask-network-logging[graylog]"
                 )
 
-            return GelfTcpHandler(
-                host=self.config["GRAYLOG_HOST"],
-                port=self.config["GRAYLOG_PORT"],
-                debug=self.config["GRAYLOG_DEBUG"],
-                _app_name=self.config["GRAYLOG_APP_NAME"],
-                _service_name=self.config["GRAYLOG_SERVICE_NAME"],
-                _environment=self.config["GRAYLOG_ENVIRONMENT"],
-                include_extra_fields=self.config["GRAYLOG_EXTRA_FIELDS"],
+            return cast(
+                logging.Handler,
+                GelfTcpHandler(
+                    host=self.config["GRAYLOG_HOST"],
+                    port=self.config["GRAYLOG_PORT"],
+                    debug=self.config["GRAYLOG_DEBUG"],
+                    _app_name=self.config["GRAYLOG_APP_NAME"],
+                    _service_name=self.config["GRAYLOG_SERVICE_NAME"],
+                    _environment=self.config["GRAYLOG_ENVIRONMENT"],
+                    include_extra_fields=self.config["GRAYLOG_EXTRA_FIELDS"],
+                ),
             )
         else:
             # Use StreamHandler for non-production environments
@@ -176,25 +179,6 @@ class GraylogExtension(BaseLoggingExtension):
             flask_env = self._get_flask_env()
             return f"Skipping setup in {flask_env} environment"
         return "Skipping setup (no app configured)"
-
-    def _get_flask_env(self) -> str:
-        """
-        Get Flask environment in a version-compatible way.
-
-        Supports both Flask 1.x (app.env) and Flask 2.0+ (config['ENV']).
-
-        Returns:
-            The current Flask environment (e.g., 'development', 'production')
-        """
-        if self.app is None:
-            return "production"
-
-        # Try Flask 1.x app.env first, then Flask 2.0+ config['ENV']
-        # Use getattr to safely access potentially missing attribute
-        env_attr = getattr(self.app, "env", None)
-        if env_attr is not None:
-            return env_attr
-        return self.app.config.get("ENV", "production")
 
     # Keep the old _setup_logging method for backward compatibility but mark as deprecated
     def _setup_logging(self) -> None:

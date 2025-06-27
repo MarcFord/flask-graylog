@@ -48,6 +48,9 @@ def get_flask_env(app: "Flask | None") -> str:
     # Try Flask 1.x app.env first, then Flask 2.0+ config['ENV']
     # Use getattr to safely access potentially missing attribute
     env_attr = getattr(app, "env", None)
-    if env_attr is not None:
-        return env_attr
-    return app.config.get("ENV", "production")
+    if env_attr is not None and isinstance(env_attr, str):
+        return str(env_attr)  # Explicit cast to satisfy mypy
+
+    # Fall back to config['ENV'] and ensure it's a string
+    env_config = app.config.get("ENV", "production")
+    return str(env_config)

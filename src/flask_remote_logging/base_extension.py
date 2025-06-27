@@ -191,6 +191,25 @@ class BaseLoggingExtension(ABC):
             if self.context_filter:
                 logger.addFilter(self.context_filter)
 
+    def _get_flask_env(self) -> str:
+        """
+        Get Flask environment in a version-compatible way.
+        
+        Supports both Flask 1.x (app.env) and Flask 2.0+ (config['ENV']).
+        
+        Returns:
+            The current Flask environment (e.g., 'development', 'production')
+        """
+        if self.app is None:
+            return 'production'
+        
+        # Try Flask 1.x app.env first, then Flask 2.0+ config['ENV']
+        # Use getattr to safely access potentially missing attribute
+        env_attr = getattr(self.app, 'env', None)
+        if env_attr is not None:
+            return env_attr
+        return self.app.config.get('ENV', 'production')
+
     # Abstract methods that subclasses must implement
 
     @abstractmethod

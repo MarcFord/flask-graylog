@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 import pytest
 from flask import Flask
 
-from flask_network_logging import GraylogContextFilter, GraylogExtension
+from flask_remote_logging import GraylogContextFilter, GraylogExtension
 
 
 class TestPerformanceAndEdgeCases:
@@ -131,7 +131,7 @@ class TestPerformanceAndEdgeCases:
 
         with app.test_request_context("/test"):
             # Mock Flask request to simulate missing attributes
-            with patch("flask_network_logging.context_filter.request") as mock_request:
+            with patch("flask_remote_logging.context_filter.request") as mock_request:
                 mock_request.values = Mock()
                 mock_request.values.to_dict.side_effect = AttributeError("Missing method")
 

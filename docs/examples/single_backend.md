@@ -4,7 +4,7 @@
 
 ```python
 from flask import Flask
-from flask_network_logging import NetworkLogging
+from flask_remote_logging import RemoteLogging
 
 app = Flask(__name__)
 
@@ -12,7 +12,7 @@ app.config['GRAYLOG_HOST'] = 'localhost'
 app.config['GRAYLOG_PORT'] = 12201
 app.config['GRAYLOG_FACILITY'] = 'flask-app'
 
-network_logging = NetworkLogging()
+network_logging = RemoteLogging()
 network_logging.init_app(app)
 
 @app.route('/')
@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
 ```python
 from flask import Flask
-from flask_network_logging import AWSExtension
+from flask_remote_logging import AWSLogExtension
 
 app = Flask(__name__)
 
@@ -36,7 +36,7 @@ app.config['AWS_REGION'] = 'us-east-1'
 app.config['AWS_LOG_GROUP'] = 'flask-app-logs'
 app.config['AWS_LOG_STREAM'] = 'production'
 
-aws_logging = AWSExtension()
+aws_logging = AWSLogExtension()
 aws_logging.init_app(app)
 
 @app.route('/')

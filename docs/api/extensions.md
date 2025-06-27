@@ -5,7 +5,7 @@ Complete API reference for logging extension classes.
 ## Base Extension
 
 ```{eval-rst}
-.. autoclass:: flask_network_logging.base_extension.BaseLoggingExtension
+.. autoclass:: flask_remote_logging.base_extension.BaseLoggingExtension
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ Complete API reference for logging extension classes.
 ## Graylog Extension
 
 ```{eval-rst}
-.. autoclass:: flask_network_logging.GraylogExtension
+.. autoclass:: flask_remote_logging.GraylogExtension
    :members:
    :undoc-members:
    :show-inheritance:
@@ -26,7 +26,7 @@ Complete API reference for logging extension classes.
 
 ```python
 from flask import Flask
-from flask_network_logging import GraylogExtension
+from flask_remote_logging import GraylogExtension
 
 app = Flask(__name__)
 app.config.update({
@@ -53,7 +53,7 @@ graylog = GraylogExtension(
 ## AWS CloudWatch Extension
 
 ```{eval-rst}
-.. autoclass:: flask_network_logging.AWSLogExtension
+.. autoclass:: flask_remote_logging.AWSLogExtension
    :members:
    :undoc-members:
    :show-inheritance:
@@ -64,7 +64,7 @@ graylog = GraylogExtension(
 
 ```python
 from flask import Flask
-from flask_network_logging import AWSLogExtension
+from flask_remote_logging import AWSLogExtension
 
 app = Flask(__name__)
 app.config.update({
@@ -79,7 +79,7 @@ aws_log = AWSLogExtension(app)
 ## Google Cloud Logging Extension
 
 ```{eval-rst}
-.. autoclass:: flask_network_logging.GCPLogExtension
+.. autoclass:: flask_remote_logging.GCPLogExtension
    :members:
    :undoc-members:
    :show-inheritance:
@@ -90,7 +90,7 @@ aws_log = AWSLogExtension(app)
 
 ```python
 from flask import Flask
-from flask_network_logging import GCPLogExtension
+from flask_remote_logging import GCPLogExtension
 
 app = Flask(__name__)
 app.config.update({
@@ -104,7 +104,7 @@ gcp_log = GCPLogExtension(app)
 ## Azure Monitor Extension
 
 ```{eval-rst}
-.. autoclass:: flask_network_logging.AzureLogExtension
+.. autoclass:: flask_remote_logging.AzureLogExtension
    :members:
    :undoc-members:
    :show-inheritance:
@@ -115,7 +115,7 @@ gcp_log = GCPLogExtension(app)
 
 ```python
 from flask import Flask
-from flask_network_logging import AzureLogExtension
+from flask_remote_logging import AzureLogExtension
 
 app = Flask(__name__)
 app.config.update({
@@ -130,7 +130,7 @@ azure_log = AzureLogExtension(app)
 ## IBM Cloud Logs Extension
 
 ```{eval-rst}
-.. autoclass:: flask_network_logging.IBMLogExtension
+.. autoclass:: flask_remote_logging.IBMLogExtension
    :members:
    :undoc-members:
    :show-inheritance:
@@ -141,7 +141,7 @@ azure_log = AzureLogExtension(app)
 
 ```python
 from flask import Flask
-from flask_network_logging import IBMLogExtension
+from flask_remote_logging import IBMLogExtension
 
 app = Flask(__name__)
 app.config.update({
@@ -156,7 +156,7 @@ ibm_log = IBMLogExtension(app)
 ## Oracle Cloud Infrastructure Extension
 
 ```{eval-rst}
-.. autoclass:: flask_network_logging.OCILogExtension
+.. autoclass:: flask_remote_logging.OCILogExtension
    :members:
    :undoc-members:
    :show-inheritance:
@@ -167,7 +167,7 @@ ibm_log = IBMLogExtension(app)
 
 ```python
 from flask import Flask
-from flask_network_logging import OCILogExtension
+from flask_remote_logging import OCILogExtension
 
 app = Flask(__name__)
 app.config.update({

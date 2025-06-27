@@ -6,10 +6,10 @@ Flask Network Logging works seamlessly with Flask application factories.
 
 ```python
 from flask import Flask
-from flask_network_logging import NetworkLogging
+from flask_remote_logging import RemoteLogging
 
 # Create extension instance outside factory
-network_logging = NetworkLogging()
+network_logging = RemoteLogging()
 
 def create_app(config_name):
     app = Flask(__name__)
@@ -24,10 +24,10 @@ def create_app(config_name):
 ## Multiple Backends
 
 ```python
-from flask_network_logging import AWSExtension, GCPExtension
+from flask_remote_logging import AWSLogExtension, GCPLogExtension
 
-aws_extension = AWSExtension()
-gcp_extension = GCPExtension()
+aws_extension = AWSLogExtension()
+gcp_extension = GCPLogExtension()
 
 def create_app(config_name):
     app = Flask(__name__)

@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 from flask import Flask
 
-from flask_network_logging import AWSLogExtension
-from flask_network_logging.context_filter import GraylogContextFilter
+from flask_remote_logging import AWSLogExtension
+from flask_remote_logging.context_filter import GraylogContextFilter
 
 
 class TestAWSLogExtension:
@@ -28,7 +28,7 @@ class TestAWSLogExtension:
         assert extension.log_group is None
         assert extension.log_stream is None
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_init_with_app(self, mock_boto3, app):
         """Test initialization with a Flask app."""
         # Mock boto3 session and client
@@ -48,7 +48,7 @@ class TestAWSLogExtension:
         custom_filter = Mock(spec=logging.Filter)
         custom_formatter = Mock(spec=logging.Formatter)
 
-        with patch("flask_network_logging.aws_extension.boto3"):
+        with patch("flask_remote_logging.aws_extension.boto3"):
             extension = AWSLogExtension(
                 app=app,
                 get_current_user=mock_get_current_user,
@@ -65,7 +65,7 @@ class TestAWSLogExtension:
             assert extension.context_filter is custom_filter
             assert extension.log_formatter is custom_formatter
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_init_app_method(self, mock_boto3, app):
         """Test the init_app method."""
         mock_session = MagicMock()
@@ -129,7 +129,7 @@ class TestAWSLogExtension:
         # Should not raise an exception
         extension._setup_logging()
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_setup_logging_with_aws_environment(self, mock_boto3, app):
         """Test _setup_logging in AWS environment."""
         mock_session = MagicMock()
@@ -148,7 +148,7 @@ class TestAWSLogExtension:
         assert extension.context_filter is not None
         assert isinstance(extension.context_filter, GraylogContextFilter)
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_setup_logging_with_development_environment(self, mock_boto3, app):
         """Test _setup_logging in development environment."""
         mock_session = MagicMock()
@@ -163,7 +163,7 @@ class TestAWSLogExtension:
             # The setup happens automatically during init, so check for the expected call
             mock_info.assert_called_with("AWS CloudWatch Logs: Skipping setup in development environment")
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_init_cloudwatch_client_with_credentials(self, mock_boto3, app):
         """Test CloudWatch client initialization with explicit credentials."""
         mock_session = MagicMock()
@@ -188,7 +188,7 @@ class TestAWSLogExtension:
             region_name="us-west-2", aws_access_key_id="test-key", aws_secret_access_key="test-secret"
         )
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_init_cloudwatch_client_without_credentials(self, mock_boto3, app):
         """Test CloudWatch client initialization without explicit credentials."""
         mock_session = MagicMock()
@@ -207,11 +207,11 @@ class TestAWSLogExtension:
 
     def test_init_cloudwatch_client_without_boto3(self, app):
         """Test CloudWatch client initialization when boto3 is not available."""
-        with patch("flask_network_logging.aws_extension.boto3", None):
+        with patch("flask_remote_logging.aws_extension.boto3", None):
             extension = AWSLogExtension(app=app)
             assert extension.cloudwatch_client is None
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_ensure_log_group_exists_success(self, mock_boto3, app):
         """Test ensuring log group exists when it already exists."""
         mock_session = MagicMock()
@@ -234,7 +234,7 @@ class TestAWSLogExtension:
         mock_client.describe_log_groups.assert_called_once_with(logGroupNamePrefix="/aws/lambda/test")
         mock_client.create_log_group.assert_not_called()
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_ensure_log_group_exists_create(self, mock_boto3, app):
         """Test ensuring log group exists when it needs to be created."""
         from botocore.exceptions import ClientError
@@ -264,7 +264,7 @@ class TestAWSLogExtension:
             mock_client.create_log_group.assert_called_once_with(logGroupName="/aws/lambda/test")
             mock_info.assert_called_with("Created CloudWatch log group: /aws/lambda/test")
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_ensure_log_stream_exists_success(self, mock_boto3, app):
         """Test ensuring log stream exists when it already exists."""
         mock_session = MagicMock()
@@ -288,7 +288,7 @@ class TestAWSLogExtension:
         )
         mock_client.create_log_stream.assert_not_called()
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_setup_logging_with_context_filter(self, mock_boto3, app):
         """Test _setup_logging with custom context filter."""
         mock_session = MagicMock()
@@ -305,7 +305,7 @@ class TestAWSLogExtension:
 
         assert extension.context_filter is custom_filter
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_setup_logging_with_additional_logs(self, mock_boto3, app):
         """Test _setup_logging with additional loggers."""
         mock_session = MagicMock()
@@ -327,7 +327,7 @@ class TestAWSLogExtension:
 
     def test_context_filter_creation(self, app, mock_get_current_user):
         """Test that context filter is created correctly."""
-        with patch("flask_network_logging.aws_extension.boto3"):
+        with patch("flask_remote_logging.aws_extension.boto3"):
             # AWS extension should create default context filter if none provided
             extension = AWSLogExtension(app=app, get_current_user=mock_get_current_user)
 
@@ -337,7 +337,7 @@ class TestAWSLogExtension:
 
     def test_log_formatter_creation(self, app):
         """Test that log formatter is created correctly."""
-        with patch("flask_network_logging.aws_extension.boto3"):
+        with patch("flask_remote_logging.aws_extension.boto3"):
             # AWS extension should create default log formatter if none provided
             extension = AWSLogExtension(app=app)
 
@@ -347,7 +347,7 @@ class TestAWSLogExtension:
 
     def test_log_level_parameter_override(self, app):
         """Test that log level parameter overrides config."""
-        with patch("flask_network_logging.aws_extension.boto3"):
+        with patch("flask_remote_logging.aws_extension.boto3"):
             app.config.update(
                 {"AWS_LOG_LEVEL": "INFO", "AWS_ENVIRONMENT": "production", "AWS_LOG_GROUP": "/aws/lambda/test"}
             )
@@ -360,10 +360,10 @@ class TestAWSLogExtension:
 class TestCloudWatchHandler:
     """Test cases for the CloudWatchHandler class."""
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_cloudwatch_handler_init(self, mock_boto3):
         """Test CloudWatchHandler initialization."""
-        from flask_network_logging.aws_extension import CloudWatchHandler
+        from flask_remote_logging.aws_extension import CloudWatchHandler
 
         mock_client = Mock()
         handler = CloudWatchHandler(client=mock_client, log_group="/aws/lambda/test", log_stream="test-stream")
@@ -373,10 +373,10 @@ class TestCloudWatchHandler:
         assert handler.log_stream == "test-stream"
         assert handler.sequence_token is None
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_cloudwatch_handler_emit(self, mock_boto3):
         """Test CloudWatchHandler emit method."""
-        from flask_network_logging.aws_extension import CloudWatchHandler
+        from flask_remote_logging.aws_extension import CloudWatchHandler
 
         mock_client = Mock()
         mock_client.put_log_events.return_value = {"nextSequenceToken": "token123"}
@@ -402,12 +402,12 @@ class TestCloudWatchHandler:
         # Verify sequence token was updated
         assert handler.sequence_token == "token123"
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_cloudwatch_handler_emit_with_sequence_token(self, mock_boto3):
         """Test CloudWatchHandler emit method with existing sequence token."""
         from botocore.exceptions import ClientError
 
-        from flask_network_logging.aws_extension import CloudWatchHandler
+        from flask_remote_logging.aws_extension import CloudWatchHandler
 
         mock_client = Mock()
         mock_client.put_log_events.return_value = {"nextSequenceToken": "token456"}
@@ -429,12 +429,12 @@ class TestCloudWatchHandler:
         assert kwargs["sequenceToken"] == "existing_token"
         assert handler.sequence_token == "token456"
 
-    @patch("flask_network_logging.aws_extension.boto3")
+    @patch("flask_remote_logging.aws_extension.boto3")
     def test_cloudwatch_handler_emit_invalid_sequence_token(self, mock_boto3):
         """Test CloudWatchHandler emit method with invalid sequence token."""
         from botocore.exceptions import ClientError
 
-        from flask_network_logging.aws_extension import CloudWatchHandler
+        from flask_remote_logging.aws_extension import CloudWatchHandler
 
         mock_client = Mock()
         # First call fails with InvalidSequenceTokenException

@@ -13,7 +13,7 @@ Features demonstrated:
 
 import os
 from flask import Flask, jsonify, request
-from flask_network_logging import GCPLogExtension
+from flask_remote_logging import GCPLogExtension
 
 # Create Flask application
 app = Flask(__name__)

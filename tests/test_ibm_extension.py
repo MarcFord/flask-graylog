@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 from flask import Flask
 
-from flask_network_logging.ibm_extension import IBMCloudLogHandler, IBMLogExtension
+from flask_remote_logging.ibm_extension import IBMCloudLogHandler, IBMLogExtension
 
 
 class TestIBMLogExtension:
@@ -63,8 +63,8 @@ class TestIBMLogExtension:
         config = extension._get_config_from_app()
         assert config == {}
 
-    @patch("flask_network_logging.ibm_extension.requests", None)
-    @patch("flask_network_logging.ibm_extension.requests", None)
+    @patch("flask_remote_logging.ibm_extension.requests", None)
+    @patch("flask_remote_logging.ibm_extension.requests", None)
     def test_init_ibm_config_without_requests(self):
         """Test IBM config initialization without requests library."""
         extension = IBMLogExtension(self.app)
@@ -81,11 +81,11 @@ class TestIBMLogExtension:
         self.app.config["IBM_INGESTION_KEY"] = None
         extension = IBMLogExtension(self.app)
 
-        with patch("flask_network_logging.ibm_extension.requests"):
+        with patch("flask_remote_logging.ibm_extension.requests"):
             extension._init_ibm_config()
             assert extension.ingestion_key is None
 
-    @patch("flask_network_logging.ibm_extension.requests")
+    @patch("flask_remote_logging.ibm_extension.requests")
     def test_setup_logging(self, mock_requests):
         """Test logging setup."""
         with patch.object(IBMLogExtension, "_create_log_handler") as mock_create_handler:
@@ -96,7 +96,7 @@ class TestIBMLogExtension:
             # Setup happens automatically during init
             mock_create_handler.assert_called()
 
-    @patch("flask_network_logging.ibm_extension.requests")
+    @patch("flask_remote_logging.ibm_extension.requests")
     def test_setup_logging_development_env(self, mock_requests):
         """Test logging setup skips in development environment."""
         self.app.config["IBM_ENVIRONMENT"] = "development"
@@ -111,7 +111,7 @@ class TestIBMLogExtension:
             extension._setup_logging()
             mock_create_handler.assert_not_called()  # Should be skipped due to environment
 
-    @patch("flask_network_logging.ibm_extension.requests")
+    @patch("flask_remote_logging.ibm_extension.requests")
     def test_configure_logger_with_handler(self, mock_requests):
         """Test logger configuration with IBM handler."""
         extension = IBMLogExtension(self.app)
@@ -123,7 +123,7 @@ class TestIBMLogExtension:
             logger.setLevel.assert_called_with(logging.INFO)
             logger.addHandler.assert_called()
 
-    @patch("flask_network_logging.ibm_extension.requests")
+    @patch("flask_remote_logging.ibm_extension.requests")
     def test_configure_logger_no_key(self, mock_requests):
         """Test logger configuration without ingestion key."""
         extension = IBMLogExtension(self.app)
@@ -166,7 +166,7 @@ class TestIBMCloudLogHandler:
         assert self.handler._map_log_level("CRITICAL") == "Fatal"
         assert self.handler._map_log_level("UNKNOWN") == "Info"
 
-    @patch("flask_network_logging.ibm_extension.requests")
+    @patch("flask_remote_logging.ibm_extension.requests")
     def test_emit_success(self, mock_requests):
         """Test successful log emission."""
         mock_response = Mock()
@@ -198,7 +198,7 @@ class TestIBMCloudLogHandler:
         assert log_line["level"] == "Info"
         assert "test message" in log_line["line"]
 
-    @patch("flask_network_logging.ibm_extension.requests")
+    @patch("flask_remote_logging.ibm_extension.requests")
     def test_emit_with_extra_fields(self, mock_requests):
         """Test log emission with extra fields."""
         mock_response = Mock()
@@ -224,7 +224,7 @@ class TestIBMCloudLogHandler:
         assert log_line["meta"]["custom_field"] == "custom_value"
         assert log_line["meta"]["user_id"] == 123
 
-    @patch("flask_network_logging.ibm_extension.requests")
+    @patch("flask_remote_logging.ibm_extension.requests")
     def test_emit_error_response(self, mock_requests):
         """Test log emission with error response."""
         mock_response = Mock()
@@ -242,7 +242,7 @@ class TestIBMCloudLogHandler:
             self.handler.emit(record)
             mock_handle_error.assert_called_once()
 
-    @patch("flask_network_logging.ibm_extension.requests", None)
+    @patch("flask_remote_logging.ibm_extension.requests", None)
     def test_send_log_data_without_requests(self):
         """Test sending log data without requests library."""
         with pytest.raises(ImportError) as exc_info:
@@ -250,7 +250,7 @@ class TestIBMCloudLogHandler:
 
         assert "requests library is required" in str(exc_info.value)
 
-    @patch("flask_network_logging.ibm_extension.requests")
+    @patch("flask_remote_logging.ibm_extension.requests")
     def test_send_log_data_success(self, mock_requests):
         """Test successful log data sending."""
         mock_response = Mock()
@@ -268,7 +268,7 @@ class TestIBMCloudLogHandler:
         assert call_args[1]["auth"] == ("test-key", "")
         assert call_args[1]["json"] == payload
 
-    @patch("flask_network_logging.ibm_extension.requests")
+    @patch("flask_remote_logging.ibm_extension.requests")
     def test_send_log_data_with_optional_params(self, mock_requests):
         """Test log data sending with optional parameters."""
         mock_response = Mock()

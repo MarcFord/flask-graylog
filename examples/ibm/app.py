@@ -30,7 +30,7 @@ import uuid
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
 
-from flask_network_logging import IBMLogExtension
+from flask_remote_logging import IBMLogExtension
 
 app = Flask(__name__)
 

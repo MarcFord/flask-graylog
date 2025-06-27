@@ -7,7 +7,7 @@ print("🔍 Testing Flask Network Logging package...")
 
 # Test basic imports
 try:
-    from flask_network_logging import GraylogExtension, GCPLogExtension, Graylog, GCPLog
+    from flask_remote_logging import GraylogExtension, GCPLogExtension, Graylog, GCPLog
     print("✅ Main classes imported successfully")
 except ImportError as e:
     print(f"❌ Import failed: {e}")
@@ -15,7 +15,7 @@ except ImportError as e:
 
 # Test context filter import
 try:
-    from flask_network_logging.context_filter import GraylogContextFilter
+    from flask_remote_logging.context_filter import GraylogContextFilter
     print("✅ Context filter imported successfully")
 except ImportError as e:
     print(f"❌ Context filter import failed: {e}")
@@ -23,7 +23,7 @@ except ImportError as e:
 
 # Test version import
 try:
-    from flask_network_logging import __version__
+    from flask_remote_logging import __version__
     print(f"✅ Version: {__version__}")
 except ImportError as e:
     print(f"❌ Version import failed: {e}")
@@ -40,8 +40,8 @@ except AssertionError:
 
 # Test package docstring
 try:
-    import flask_network_logging
-    assert "Flask Network Logging" in flask_network_logging.__doc__
+    import flask_remote_logging
+    assert "Flask Remote Logging" in flask_remote_logging.__doc__
     print("✅ Package docstring updated correctly")
 except AssertionError:
     print("❌ Package docstring not updated")
@@ -55,5 +55,5 @@ print("    ├── extension.py (Graylog)")
 print("    ├── gcp_extension.py (Google Cloud)")
 print("    └── context_filter.py")
 print("\n🚀 Usage:")
-print("  from flask_network_logging import Graylog, GCPLog")
-print("  from flask_network_logging import GraylogExtension, GCPLogExtension")
+print("  from flask_remote_logging import Graylog, GCPLog")
+print("  from flask_remote_logging import GraylogExtension, GCPLogExtension")

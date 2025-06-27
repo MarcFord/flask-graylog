@@ -84,7 +84,7 @@ class GCPLogExtension(BaseLoggingExtension):
             "GCP_APP_NAME": app_name,
             "GCP_SERVICE_NAME": self.app.config.get("GCP_SERVICE_NAME", app_name),
             "GCP_ENVIRONMENT": self.app.config.get("GCP_ENVIRONMENT", "production"),
-            "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get("FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE"),
+            "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get("FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE"),
         }
 
     def _init_backend(self) -> None:
@@ -113,7 +113,7 @@ class GCPLogExtension(BaseLoggingExtension):
         if (self.cloud_logging_client and 
             CloudLoggingHandler and 
             self.app and
-            str(self.app.env).lower() == self.config.get("GCP_ENVIRONMENT", "production").lower()):
+            str(self._get_flask_env()).lower() == self.config.get("GCP_ENVIRONMENT", "production").lower()):
             
             try:
                 # Create GCP Cloud Logging handler
@@ -147,7 +147,8 @@ class GCPLogExtension(BaseLoggingExtension):
         # Only skip if GCP is explicitly not configured and environment doesn't match
         environment = self.config.get("GCP_ENVIRONMENT", "production")
         if not self.config.get("GCP_PROJECT_ID") and self.app:
-            return str(self.app.env).lower() != environment.lower()
+            app_env = self._get_flask_env()
+            return str(app_env).lower() != environment.lower()
         return False
 
     def _get_extension_name(self) -> str:
@@ -166,7 +167,7 @@ class GCPLogExtension(BaseLoggingExtension):
         Returns:
             Configuration key name for middleware override
         """
-        return "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE"
+        return "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE"
 
     def _get_skip_reason(self) -> str:
         """Get the reason why setup is being skipped."""

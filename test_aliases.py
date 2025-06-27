@@ -3,19 +3,19 @@
 Test script to verify that all context filter aliases work correctly.
 """
 
-from flask_network_logging import GraylogContextFilter, FlaskNetworkLoggingContextFilter, FNLContextFilter
+from flask_remote_logging import GraylogContextFilter, FlaskRemoteLoggingContextFilter, FRLContextFilter
 
 def test_aliases():
     """Test that all aliases point to the same class."""
     
     # Create instances using different aliases
     graylog_filter = GraylogContextFilter()
-    fnl_filter = FlaskNetworkLoggingContextFilter()
-    short_filter = FNLContextFilter()
+    fnl_filter = FlaskRemoteLoggingContextFilter()
+    short_filter = FRLContextFilter()
     
     # Check that they are all the same class
     assert type(graylog_filter) == type(fnl_filter) == type(short_filter)
-    assert GraylogContextFilter == FlaskNetworkLoggingContextFilter == FNLContextFilter
+    assert GraylogContextFilter == FlaskRemoteLoggingContextFilter == FRLContextFilter
     
     # Check that the class name is preserved for backward compatibility
     assert graylog_filter.__class__.__name__ == "GraylogContextFilter"
@@ -24,8 +24,8 @@ def test_aliases():
     
     print("✅ All context filter aliases work correctly!")
     print(f"   - GraylogContextFilter: {GraylogContextFilter}")
-    print(f"   - FlaskNetworkLoggingContextFilter: {FlaskNetworkLoggingContextFilter}")
-    print(f"   - FNLContextFilter: {FNLContextFilter}")
+    print(f"   - FlaskRemoteLoggingContextFilter: {FlaskRemoteLoggingContextFilter}")
+    print(f"   - FRLContextFilter: {FRLContextFilter}")
     
     # Test that name mangling still works for tests
     assert hasattr(graylog_filter, '_GraylogContextFilter__request')

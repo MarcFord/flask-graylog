@@ -1,9 +1,9 @@
-# flask-network-logging
+# flask-remote-logging
 
-[![CI](https://github.com/MarcFord/flask-network-logging/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MarcFord/flask-network-logging/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/MarcFord/flask-network-logging/branch/main/graph/badge.svg)](https://codecov.io/gh/MarcFord/flask-network-logging)
+[![CI](https://github.com/MarcFord/flask-remote-logging/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MarcFord/flask-remote-logging/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/MarcFord/flask-remote-logging/branch/main/graph/badge.svg)](https://codecov.io/gh/MarcFord/flask-remote-logging)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MarcFord/flask-network-logging/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MarcFord/flask-remote-logging/blob/main/LICENSE)
 
 A Flask extension for sending application logs to remote logging services including Graylog via GELF (Graylog Extended Log Format), Google Cloud Logging, AWS CloudWatch Logs, Azure Monitor Logs, IBM Cloud Logs, and Oracle Cloud Infrastructure Logging.
 
@@ -49,7 +49,7 @@ The docs cover:
 Install the core package without any logging backend dependencies:
 
 ```bash
-pip install flask-network-logging
+pip install flask-remote-logging
 ```
 
 ### Backend-Specific Installation
@@ -58,41 +58,41 @@ Install only the dependencies you need for your specific logging backend:
 
 **For Graylog support:**
 ```bash
-pip install flask-network-logging[graylog]
+pip install flask-remote-logging[graylog]
 ```
 
 **For Google Cloud Logging support:**
 ```bash
-pip install flask-network-logging[gcp]
+pip install flask-remote-logging[gcp]
 ```
 
 **For AWS CloudWatch Logs support:**
 ```bash
-pip install flask-network-logging[aws]
+pip install flask-remote-logging[aws]
 ```
 
 **For Azure Monitor Logs support:**
 ```bash
-pip install flask-network-logging[azure]
+pip install flask-remote-logging[azure]
 ```
 
 **For IBM Cloud Logs support:**
 ```bash
-pip install flask-network-logging[ibm]
+pip install flask-remote-logging[ibm]
 ```
 
 **For Oracle Cloud Infrastructure Logging support:**
 ```bash
-pip install flask-network-logging[oci]
+pip install flask-remote-logging[oci]
 ```
 
 **For multiple backends:**
 ```bash
 # Install specific backends
-pip install flask-network-logging[graylog,aws,oci]
+pip install flask-remote-logging[graylog,aws,oci]
 
 # Or install all backends
-pip install flask-network-logging[all]
+pip install flask-remote-logging[all]
 ```
 
 ### Why Optional Dependencies?
@@ -114,7 +114,7 @@ The core package includes only Flask and essential utilities. Backend-specific d
 
 ```python
 from flask import Flask
-from flask_network_logging import GraylogExtension
+from flask_remote_logging import GraylogExtension
 
 app = Flask(__name__)
 
@@ -142,7 +142,7 @@ if __name__ == '__main__':
 
 ```python
 from flask import Flask
-from flask_network_logging import GCPLogExtension
+from flask_remote_logging import GCPLogExtension
 
 app = Flask(__name__)
 
@@ -170,7 +170,7 @@ if __name__ == '__main__':
 
 ```python
 from flask import Flask
-from flask_network_logging import AWSLogExtension
+from flask_remote_logging import AWSLogExtension
 
 app = Flask(__name__)
 
@@ -199,7 +199,7 @@ if __name__ == '__main__':
 
 ```python
 from flask import Flask
-from flask_network_logging import AzureLogExtension
+from flask_remote_logging import AzureLogExtension
 
 app = Flask(__name__)
 
@@ -228,7 +228,7 @@ if __name__ == '__main__':
 
 ```python
 from flask import Flask
-from flask_network_logging import IBMLogExtension
+from flask_remote_logging import IBMLogExtension
 
 app = Flask(__name__)
 
@@ -258,7 +258,7 @@ if __name__ == '__main__':
 
 ```python
 from flask import Flask
-from flask_network_logging import OCILogExtension
+from flask_remote_logging import OCILogExtension
 
 app = Flask(__name__)
 
@@ -291,7 +291,7 @@ By default, all logging extensions enable request/response middleware that autom
 
 ```python
 from flask import Flask
-from flask_network_logging import GraylogExtension
+from flask_remote_logging import GraylogExtension
 
 app = Flask(__name__)
 app.config.update({
@@ -315,7 +315,7 @@ You can also control middleware via configuration:
 app.config.update({
     'GRAYLOG_HOST': 'your-graylog-server.com',
     'GRAYLOG_PORT': 12201,
-    'FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE': False  # Disables middleware
+    'FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE': False  # Disables middleware
 })
 
 # This will respect the config setting
@@ -328,7 +328,7 @@ The extensions support Flask's application factory pattern:
 
 ```python
 from flask import Flask
-from flask_network_logging import GraylogExtension
+from flask_remote_logging import GraylogExtension
 
 # Create extension instance
 graylog = GraylogExtension()
@@ -365,6 +365,38 @@ cd examples/
 ./run_example.sh  # Complete setup with Graylog + Flask
 ```
 
+## Compatibility
+
+### Flask Version Support
+
+This package is compatible with **Flask 1.4.4** and higher, including Flask 2.x and Flask 3.x.
+
+Key compatibility features:
+- **Environment Detection**: Automatically handles differences between Flask 1.x (`app.env`) and Flask 2.x+ (`app.config['ENV']`)
+- **Configuration**: Works seamlessly with both old and new Flask configuration patterns
+- **Testing**: Thoroughly tested across Flask versions to ensure compatibility
+
+### Flask Version Utilities
+
+The package provides compatibility utilities that you can use in your own code:
+
+```python
+from flask_remote_logging import get_flask_env, set_flask_env
+
+# Get Flask environment in a version-compatible way
+env = get_flask_env(app)  # Works with Flask 1.x and 2.x+
+
+# Set Flask environment in a version-compatible way  
+set_flask_env(app, 'production')  # Works with Flask 1.x and 2.x+
+```
+
+These utilities handle the differences between Flask versions automatically, so your code works regardless of the Flask version being used.
+
+### Python Version Support
+
+- **Python 3.9+**: Fully supported and tested
+- **Python 3.13**: Compatible with latest Python releases
+
 ## Configuration
 
 ### Graylog Configuration
@@ -378,7 +410,7 @@ cd examples/
 | `GRAYLOG_EXTRA_FIELDS` | True to allow extra fields, False if not | True |
 | `GRAYLOG_APP_NAME` | Name of the application sending logs | `app.name` |
 | `GRAYLOG_SERVICE_NAME` | Name of the service sending logs. Useful if you have an application that is made up of multiple services | `app.name` |
-| `FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
+| `FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
 
 ### Google Cloud Logging Configuration
 
@@ -391,7 +423,7 @@ cd examples/
 | `GCP_ENVIRONMENT` | Environment where logs should be sent to GCP | `production` |
 | `GCP_APP_NAME` | Name of the application sending logs | `app.name` |
 | `GCP_SERVICE_NAME` | Name of the service sending logs | `app.name` |
-| `FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
+| `FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
 
 ### AWS CloudWatch Logs Configuration
 
@@ -406,7 +438,7 @@ cd examples/
 | `AWS_ENVIRONMENT` | Environment where logs should be sent to AWS | `production` |
 | `AWS_APP_NAME` | Name of the application sending logs | `app.name` |
 | `AWS_SERVICE_NAME` | Name of the service sending logs | `app.name` |
-| `FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
+| `FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
 
 ### Azure Monitor Logs Configuration
 
@@ -418,7 +450,7 @@ cd examples/
 | `AZURE_LOG_LEVEL` | Minimum log level | `WARNING` |
 | `AZURE_ENVIRONMENT` | Environment where logs should be sent to Azure | `production` |
 | `AZURE_TIMEOUT` | HTTP request timeout in seconds | `30` |
-| `FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
+| `FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
 
 ### IBM Cloud Logs Configuration
 
@@ -436,7 +468,7 @@ cd examples/
 | `IBM_TIMEOUT` | HTTP request timeout in seconds | `30` |
 | `IBM_INDEX_META` | Whether metadata should be indexed/searchable | `False` |
 | `IBM_TAGS` | Comma-separated list of tags for grouping hosts | `''` |
-| `FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
+| `FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
 
 ### Oracle Cloud Infrastructure Logging Configuration
 
@@ -450,7 +482,7 @@ cd examples/
 | `OCI_SOURCE` | Source identifier for log entries | `flask-app` |
 | `OCI_LOG_LEVEL` | Minimum log level | `INFO` |
 | `OCI_ENVIRONMENT` | Environment where logs should be sent to OCI | `development` |
-| `FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
+| `FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
 
 
 ## Development
@@ -461,8 +493,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
 ```bash
 # Clone repository
-git clone https://github.com/MarcFord/flask-network-logging.git
-cd flask-network-logging
+git clone https://github.com/MarcFord/flask-remote-logging.git
+cd flask-remote-logging
 
 # Install dependencies
 make install-dev
@@ -485,10 +517,10 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for de
 
 ## Support
 
-- 📖 **Documentation:** [GitHub Wiki](https://github.com/MarcFord/flask-network-logging/wiki)
-- 🐛 **Bug Reports:** [GitHub Issues](https://github.com/MarcFord/flask-network-logging/issues)
-- 💡 **Feature Requests:** [GitHub Issues](https://github.com/MarcFord/flask-network-logging/issues)
-- 💬 **Discussions:** [GitHub Discussions](https://github.com/MarcFord/flask-network-logging/discussions)
+- 📖 **Documentation:** [GitHub Wiki](https://github.com/MarcFord/flask-remote-logging/wiki)
+- 🐛 **Bug Reports:** [GitHub Issues](https://github.com/MarcFord/flask-remote-logging/issues)
+- 💡 **Feature Requests:** [GitHub Issues](https://github.com/MarcFord/flask-remote-logging/issues)
+- 💬 **Discussions:** [GitHub Discussions](https://github.com/MarcFord/flask-remote-logging/discussions)
 
 ---
 
@@ -501,6 +533,6 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for de
 
 **After first PyPI release, these badges will also appear:**
 ```markdown
-[![PyPI version](https://badge.fury.io/py/flask-network-logging.svg)](https://badge.fury.io/py/flask-network-logging)
-[![PyPI downloads](https://img.shields.io/pypi/dm/flask-network-logging.svg)](https://pypi.org/project/flask-network-logging/)
+[![PyPI version](https://badge.fury.io/py/flask-remote-logging.svg)](https://badge.fury.io/py/flask-remote-logging)
+[![PyPI downloads](https://img.shields.io/pypi/dm/flask-remote-logging.svg)](https://pypi.org/project/flask-remote-logging/)
 ```

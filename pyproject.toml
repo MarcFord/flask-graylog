@@ -1,5 +1,5 @@
 [project]
-name = "flask-network-logging"
+name = "flask-remote-logging"
 dynamic = ["version"]
 description = "Flask extension for sending logs to remote logging services including Graylog, Google Cloud Logging, AWS CloudWatch Logs, and Azure Monitor Logs."
 readme = "README.md"
@@ -26,7 +26,7 @@ classifiers = [
     "Topic :: Communications",
 ]
 dependencies = [
-    "flask>=1.1.4,<3.0.0",
+    "flask>=1.4.4,<3.0.0",
     "user-agents>=2.0.0",
 ]
 
@@ -92,11 +92,11 @@ docs = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/MarcFord/flask-network-logging"
-"Bug Reports" = "https://github.com/MarcFord/flask-network-logging/issues"
-"Source" = "https://github.com/MarcFord/flask-network-logging"
-"Documentation" = "https://github.com/MarcFord/flask-network-logging#readme"
-"Changelog" = "https://github.com/MarcFord/flask-network-logging/blob/main/CHANGELOG.md"
+"Homepage" = "https://github.com/MarcFord/flask-remote-logging"
+"Bug Reports" = "https://github.com/MarcFord/flask-remote-logging/issues"
+"Source" = "https://github.com/MarcFord/flask-remote-logging"
+"Documentation" = "https://github.com/MarcFord/flask-remote-logging#readme"
+"Changelog" = "https://github.com/MarcFord/flask-remote-logging/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["setuptools>=45.0", "wheel", "setuptools_scm[toml]>=6.2"]

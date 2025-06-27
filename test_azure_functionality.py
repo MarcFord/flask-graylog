@@ -16,7 +16,7 @@ from unittest.mock import Mock, patch
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from flask import Flask
-from flask_network_logging import AzureLogExtension, AzureLog
+from flask_remote_logging import AzureLogExtension, AzureLog
 
 def test_azure_extension_basic_functionality():
     """Test basic Azure extension functionality."""
@@ -49,7 +49,7 @@ def test_azure_extension_basic_functionality():
     print("✓ AzureLog alias works")
     
     # Test setup logging (mocking requests to avoid actual HTTP calls)
-    with patch('flask_network_logging.azure_extension.requests') as mock_requests:
+    with patch('flask_remote_logging.azure_extension.requests') as mock_requests:
         azure_log._setup_logging()
         print("✓ Setup logging works with mocked requests")
     
@@ -65,7 +65,7 @@ def test_azure_handler():
     """Test the Azure Monitor handler."""
     print("\nTesting Azure Monitor Handler...")
     
-    from flask_network_logging.azure_extension import AzureMonitorHandler
+    from flask_remote_logging.azure_extension import AzureMonitorHandler
     
     # Create handler
     handler = AzureMonitorHandler(
@@ -94,7 +94,7 @@ def test_azure_handler():
     )
     
     # Mock requests to test emit without actual HTTP calls
-    with patch('flask_network_logging.azure_extension.requests') as mock_requests:
+    with patch('flask_remote_logging.azure_extension.requests') as mock_requests:
         mock_response = Mock()
         mock_response.status_code = 200
         mock_requests.post.return_value = mock_response
@@ -146,10 +146,10 @@ def test_context_filter_integration():
     azure_log = AzureLogExtension(app, get_current_user=get_current_user)
     
     # Test that context filter is created
-    with patch('flask_network_logging.azure_extension.requests'):
+    with patch('flask_remote_logging.azure_extension.requests'):
         azure_log._setup_logging()
     
-    from flask_network_logging.context_filter import GraylogContextFilter
+    from flask_remote_logging.context_filter import GraylogContextFilter
     assert isinstance(azure_log.context_filter, GraylogContextFilter)
     assert azure_log.context_filter.get_current_user == get_current_user
     

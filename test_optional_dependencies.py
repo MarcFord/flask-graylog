@@ -43,7 +43,7 @@ def test_installation_examples():
     print("-" * 20)
     
     try:
-        from flask_network_logging import (
+        from flask_remote_logging import (
             GraylogExtension, GCPLogExtension, 
             AWSLogExtension, AzureLogExtension
         )
@@ -54,7 +54,7 @@ def test_installation_examples():
     
     # Test aliases
     try:
-        from flask_network_logging import Graylog, GCPLog, AWSLog, AzureLog
+        from flask_remote_logging import Graylog, GCPLog, AWSLog, AzureLog
         print("✅ All aliases work correctly")
     except ImportError as e:
         print(f"❌ Alias import failed: {e}")

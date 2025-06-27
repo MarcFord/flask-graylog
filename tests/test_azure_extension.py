@@ -7,8 +7,8 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 from flask import Flask
 
-from flask_network_logging.azure_extension import AzureLogExtension, AzureMonitorHandler
-from flask_network_logging.context_filter import GraylogContextFilter
+from flask_remote_logging.azure_extension import AzureLogExtension, AzureMonitorHandler
+from flask_remote_logging.context_filter import GraylogContextFilter
 
 
 class TestAzureLogExtension:
@@ -115,7 +115,7 @@ class TestAzureLogExtension:
         extension = AzureLogExtension()
         extension._setup_logging()  # Should not raise an error
 
-    @patch("flask_network_logging.azure_extension.requests")
+    @patch("flask_remote_logging.azure_extension.requests")
     def test_setup_logging_with_azure_environment(self, mock_requests):
         """Test logging setup with Azure environment."""
         app = Flask(__name__)
@@ -146,7 +146,7 @@ class TestAzureLogExtension:
         # Verify the extension was properly initialized but skipped actual logging setup
         assert extension._logging_setup is True  # Setup was run but skipped
 
-    @patch("flask_network_logging.azure_extension.requests")
+    @patch("flask_remote_logging.azure_extension.requests")
     def test_init_azure_config_with_credentials(self, mock_requests):
         """Test Azure configuration initialization with credentials."""
         app = Flask(__name__)
@@ -164,7 +164,7 @@ class TestAzureLogExtension:
         assert extension.workspace_key == "test-workspace-key"
         assert extension.log_type == "TestLogs"
 
-    @patch("flask_network_logging.azure_extension.requests")
+    @patch("flask_remote_logging.azure_extension.requests")
     def test_init_azure_config_without_credentials(self, mock_requests):
         """Test Azure configuration initialization without credentials."""
         app = Flask(__name__)
@@ -175,13 +175,13 @@ class TestAzureLogExtension:
 
     def test_init_azure_config_without_requests(self):
         """Test Azure configuration initialization without requests library."""
-        with patch("flask_network_logging.azure_extension.requests", None):
+        with patch("flask_remote_logging.azure_extension.requests", None):
             app = Flask(__name__)
             extension = AzureLogExtension(app)
 
             # Should handle missing requests gracefully
 
-    @patch("flask_network_logging.azure_extension.requests")
+    @patch("flask_remote_logging.azure_extension.requests")
     def test_setup_logging_with_context_filter(self, mock_requests):
         """Test that GraylogContextFilter is created by default."""
         app = Flask(__name__)
@@ -198,7 +198,7 @@ class TestAzureLogExtension:
 
         assert isinstance(extension.context_filter, GraylogContextFilter)
 
-    @patch("flask_network_logging.azure_extension.requests")
+    @patch("flask_remote_logging.azure_extension.requests")
     def test_setup_logging_with_additional_logs(self, mock_requests):
         """Test setup logging with additional loggers."""
         app = Flask(__name__)
@@ -217,7 +217,7 @@ class TestAzureLogExtension:
         assert extension.additional_logs is not None
         assert "test.logger" in extension.additional_logs
 
-    @patch("flask_network_logging.azure_extension.requests")
+    @patch("flask_remote_logging.azure_extension.requests")
     def test_context_filter_creation(self, mock_requests):
         """Test that context filter is created correctly."""
         app = Flask(__name__)
@@ -235,7 +235,7 @@ class TestAzureLogExtension:
         assert extension.context_filter is not None
         assert isinstance(extension.context_filter, GraylogContextFilter)
 
-    @patch("flask_network_logging.azure_extension.requests")
+    @patch("flask_remote_logging.azure_extension.requests")
     def test_log_formatter_creation(self, mock_requests):
         """Test that log formatter is created correctly."""
         app = Flask(__name__)
@@ -253,7 +253,7 @@ class TestAzureLogExtension:
         assert extension.log_formatter is not None
         assert isinstance(extension.log_formatter, logging.Formatter)
 
-    @patch("flask_network_logging.azure_extension.requests")
+    @patch("flask_remote_logging.azure_extension.requests")
     def test_log_level_parameter_override(self, mock_requests):
         """Test that log level parameter overrides config."""
         app = Flask(__name__)
@@ -286,7 +286,7 @@ class TestAzureMonitorHandler:
         assert handler.timeout == 30
         assert "test-workspace-id.ods.opinsights.azure.com" in handler.uri
 
-    @patch("flask_network_logging.azure_extension.requests")
+    @patch("flask_remote_logging.azure_extension.requests")
     def test_azure_monitor_handler_emit(self, mock_requests):
         """Test Azure Monitor handler emit method."""
         mock_response = Mock()
@@ -317,7 +317,7 @@ class TestAzureMonitorHandler:
         assert "test-workspace-id.ods.opinsights.azure.com" in call_args[0][0]
         assert call_args[1]["headers"]["Log-Type"] == "TestLogs"
 
-    @patch("flask_network_logging.azure_extension.requests")
+    @patch("flask_remote_logging.azure_extension.requests")
     def test_azure_monitor_handler_emit_with_extra_fields(self, mock_requests):
         """Test Azure Monitor handler emit with extra fields."""
         mock_response = Mock()
@@ -353,7 +353,7 @@ class TestAzureMonitorHandler:
         assert json_data[0]["custom_field"] == "custom_value"
         assert json_data[0]["request_id"] == "test-request-id"
 
-    @patch("flask_network_logging.azure_extension.requests")
+    @patch("flask_remote_logging.azure_extension.requests")
     def test_azure_monitor_handler_emit_http_error(self, mock_requests):
         """Test Azure Monitor handler with HTTP error."""
         mock_response = Mock()
@@ -382,7 +382,7 @@ class TestAzureMonitorHandler:
 
     def test_azure_monitor_handler_emit_without_requests(self):
         """Test Azure Monitor handler without requests library."""
-        with patch("flask_network_logging.azure_extension.requests", None):
+        with patch("flask_remote_logging.azure_extension.requests", None):
             handler = AzureMonitorHandler(
                 workspace_id="test-workspace-id", workspace_key="test-workspace-key", log_type="TestLogs"
             )

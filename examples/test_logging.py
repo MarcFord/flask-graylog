@@ -12,7 +12,7 @@ from datetime import datetime
 sys.path.insert(0, '../src')
 
 from flask import Flask
-from flask_network_logging import GraylogExtension
+from flask_remote_logging import GraylogExtension
 
 # Create a minimal Flask app for testing
 app = Flask(__name__)

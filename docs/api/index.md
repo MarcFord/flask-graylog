@@ -20,42 +20,42 @@ Flask Network Logging provides a comprehensive API for integrating remote loggin
 
 The main extension classes for each logging backend:
 
-- {class}`flask_network_logging.GraylogExtension` - Graylog GELF logging
-- {class}`flask_network_logging.AWSLogExtension` - AWS CloudWatch Logs  
-- {class}`flask_network_logging.GCPLogExtension` - Google Cloud Logging
-- {class}`flask_network_logging.AzureLogExtension` - Azure Monitor Logs
-- {class}`flask_network_logging.IBMLogExtension` - IBM Cloud Logs
-- {class}`flask_network_logging.OCILogExtension` - Oracle Cloud Infrastructure
+- {class}`flask_remote_logging.GraylogExtension` - Graylog GELF logging
+- {class}`flask_remote_logging.AWSLogExtension` - AWS CloudWatch Logs  
+- {class}`flask_remote_logging.GCPLogExtension` - Google Cloud Logging
+- {class}`flask_remote_logging.AzureLogExtension` - Azure Monitor Logs
+- {class}`flask_remote_logging.IBMLogExtension` - IBM Cloud Logs
+- {class}`flask_remote_logging.OCILogExtension` - Oracle Cloud Infrastructure
 
 ### Context Filters
 
 Filters that add request context and metadata to log records:
 
-- {class}`flask_network_logging.GraylogContextFilter` - Request context filter
-- {class}`flask_network_logging.FlaskNetworkLoggingContextFilter` - Alias for compatibility
+- {class}`flask_remote_logging.GraylogContextFilter` - Request context filter
+- {class}`flask_remote_logging.FlaskRemoteLoggingContextFilter` - Alias for compatibility
 
 ### Middleware
 
 Automatic request/response logging components:
 
-- {func}`flask_network_logging.middleware.setup_middleware` - Configure middleware
-- {func}`flask_network_logging.middleware.before_request` - Request start handler  
-- {func}`flask_network_logging.middleware.after_request` - Request completion handler
+- {func}`flask_remote_logging.middleware.setup_middleware` - Configure middleware
+- {func}`flask_remote_logging.middleware.before_request` - Request start handler  
+- {func}`flask_remote_logging.middleware.after_request` - Request completion handler
 
 ### Custom Handlers
 
 Logging handlers for each backend service:
 
-- {class}`flask_network_logging.aws_extension.CloudWatchHandler` - AWS CloudWatch handler
-- {class}`flask_network_logging.azure_extension.AzureMonitorHandler` - Azure handler
-- {class}`flask_network_logging.ibm_extension.IBMCloudLogHandler` - IBM handler
+- {class}`flask_remote_logging.aws_extension.CloudWatchHandler` - AWS CloudWatch handler
+- {class}`flask_remote_logging.azure_extension.AzureMonitorHandler` - Azure handler
+- {class}`flask_remote_logging.ibm_extension.IBMCloudLogHandler` - IBM handler
 
 ## Quick Reference
 
 ### Common Classes
 
 ```python
-from flask_network_logging import (
+from flask_remote_logging import (
     GraylogExtension,           # Graylog integration
     AWSLogExtension,            # AWS CloudWatch
     GCPLogExtension,            # Google Cloud Logging
@@ -69,7 +69,7 @@ from flask_network_logging import (
 ### Common Functions
 
 ```python
-from flask_network_logging.middleware import (
+from flask_remote_logging.middleware import (
     setup_middleware,           # Configure automatic logging
     before_request,             # Request start handler
     after_request,              # Request completion handler
@@ -98,7 +98,7 @@ Configuration keys follow a consistent pattern:
 - **`{BACKEND}_PORT`** - Service port
 - **`{BACKEND}_LEVEL`** - Log level
 - **`{BACKEND}_ENVIRONMENT`** - Target environment
-- **`FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE`** - Global middleware control
+- **`FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE`** - Global middleware control
 
 ### Return Values
 
@@ -116,7 +116,7 @@ from typing import Optional, List, Callable, Dict, Any
 from flask import Flask
 from logging import Handler, Filter, Formatter
 
-from flask_network_logging import GraylogExtension
+from flask_remote_logging import GraylogExtension
 
 def setup_logging(
     app: Flask,
@@ -139,7 +139,7 @@ try:
     graylog = GraylogExtension(app)
 except ImportError:
     # Missing dependencies
-    print("Install with: pip install flask-network-logging[graylog]")
+    print("Install with: pip install flask-remote-logging[graylog]")
 except ConnectionError:
     # Network/service issues  
     print("Check your Graylog server configuration")

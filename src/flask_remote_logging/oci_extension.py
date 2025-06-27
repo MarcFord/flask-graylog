@@ -44,7 +44,7 @@ class OCILogExtension(BaseLoggingExtension):
     Example:
         ```python
         from flask import Flask
-        from flask_network_logging import OCILogExtension
+        from flask_remote_logging import OCILogExtension
 
         app = Flask(__name__)
         app.config.update({
@@ -115,7 +115,7 @@ class OCILogExtension(BaseLoggingExtension):
             "OCI_ENVIRONMENT": self.app.config.get("OCI_ENVIRONMENT", os.getenv("OCI_ENVIRONMENT", "production")),
             "OCI_REGION": self.app.config.get("OCI_REGION", os.getenv("OCI_REGION")),
             "OCI_COMPARTMENT_ID": self.app.config.get("OCI_COMPARTMENT_ID", os.getenv("OCI_COMPARTMENT_ID")),
-            "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get("FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE"),
+            "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get("FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE"),
         }
 
     def _init_backend(self) -> None:
@@ -175,7 +175,7 @@ class OCILogExtension(BaseLoggingExtension):
 
     def _get_middleware_config_key(self) -> str:
         """Get the configuration key for middleware override."""
-        return "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE"
+        return "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE"
 
     def _get_skip_reason(self) -> str:
         """Get the reason why setup is being skipped."""

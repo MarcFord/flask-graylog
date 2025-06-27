@@ -1,6 +1,6 @@
 # Azure Monitor Logs Flask Example
 
-This example demonstrates how to integrate Flask with Azure Monitor Logs (Log Analytics) using the `flask-network-logging` package.
+This example demonstrates how to integrate Flask with Azure Monitor Logs (Log Analytics) using the `flask-remote-logging` package.
 
 ## Features
 
@@ -207,5 +207,5 @@ az keyvault secret set \
 
 - [Azure Monitor Logs Documentation](https://docs.microsoft.com/en-us/azure/azure-monitor/logs/)
 - [Log Analytics Data Collector API](https://docs.microsoft.com/en-us/azure/azure-monitor/logs/data-collector-api)
-- [flask-network-logging Documentation](../../README.md)
+- [flask-remote-logging Documentation](../../README.md)
 - [KQL Query Language Reference](https://docs.microsoft.com/en-us/azure/data-explorer/kusto/query/)

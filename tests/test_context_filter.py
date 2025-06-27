@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 import pytest
 from flask import Flask, g
 
-from flask_network_logging.context_filter import GraylogContextFilter
+from flask_remote_logging.context_filter import GraylogContextFilter
 
 
 class TestGraylogContextFilter:
@@ -313,7 +313,7 @@ class TestGraylogContextFilter:
 
         with app.test_request_context("/test"):
             # Mock the Flask request
-            with patch("flask_network_logging.context_filter.request") as mock_request:
+            with patch("flask_remote_logging.context_filter.request") as mock_request:
                 mock_request.environ = {}
                 mock_request.headers = {}
                 mock_request.remote_addr = "127.0.0.1"

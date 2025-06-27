@@ -3,7 +3,7 @@
 """Debug script to test Azure extension setup."""
 
 from flask import Flask
-from src.flask_network_logging import AzureLogExtension
+from src.flask_remote_logging import AzureLogExtension
 
 app = Flask(__name__)
 app.config.update({

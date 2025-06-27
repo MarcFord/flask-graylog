@@ -1,5 +1,5 @@
 """
-Flask Network Logging - A Flask extension for integrating with remote logging services.
+Flask Remote Logging - A Flask extension for integrating with remote logging services.
 
 This package provides an easy-to-use interface for sending logs from a Flask application
 to remote logging services including Graylog, Google Cloud Logging, AWS CloudWatch Logs,
@@ -10,13 +10,13 @@ Azure Monitor Logs, IBM Cloud Logs, and Oracle Cloud Infrastructure Logging.
 try:
     from importlib.metadata import PackageNotFoundError, version
 
-    __version__ = version("flask_network_logging")
+    __version__ = version("flask_remote_logging")
 except ImportError:
     # Python < 3.8
     try:
         from importlib_metadata import PackageNotFoundError, version  # type: ignore
 
-        __version__ = version("flask_network_logging")
+        __version__ = version("flask_remote_logging")
     except ImportError:
         __version__ = "0.0.1-dev"
 except (PackageNotFoundError, Exception):  # pylint: disable=broad-exception-caught
@@ -25,7 +25,8 @@ except (PackageNotFoundError, Exception):  # pylint: disable=broad-exception-cau
 
 from .aws_extension import AWSLogExtension
 from .azure_extension import AzureLogExtension
-from .context_filter import FlaskNetworkLoggingContextFilter, FNLContextFilter, GraylogContextFilter
+from .context_filter import FlaskRemoteLoggingContextFilter, FRLContextFilter, GraylogContextFilter
+from .compat import get_flask_env, set_flask_env
 
 # Import main classes for easy access
 from .extension import GraylogExtension
@@ -55,7 +56,9 @@ __all__ = [
     "IBMLog",
     "OCILog",
     "GraylogContextFilter",
-    "FlaskNetworkLoggingContextFilter",
-    "FNLContextFilter",  # Last two are aliases
+    "FlaskRemoteLoggingContextFilter",
+    "FRLContextFilter",  # Last two are aliases
+    "get_flask_env",
+    "set_flask_env",
     "__version__",
 ]

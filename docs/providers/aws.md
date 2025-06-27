@@ -5,14 +5,14 @@ Send logs to Amazon CloudWatch Logs service.
 ## Installation
 
 ```bash
-pip install flask-network-logging[aws]
+pip install flask-remote-logging[aws]
 ```
 
 ## Configuration
 
 ```python
 from flask import Flask
-from flask_network_logging import AWSExtension
+from flask_remote_logging import AWSLogExtension
 
 app = Flask(__name__)
 
@@ -25,7 +25,7 @@ app.config['AWS_LOG_STREAM'] = 'production'
 app.config['AWS_ACCESS_KEY_ID'] = 'your-access-key'
 app.config['AWS_SECRET_ACCESS_KEY'] = 'your-secret-key'
 
-aws_logging = AWSExtension()
+aws_logging = AWSLogExtension()
 aws_logging.init_app(app)
 ```
 

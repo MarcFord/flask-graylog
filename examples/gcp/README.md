@@ -1,6 +1,6 @@
 # Google Cloud Logging Flask Example
 
-This example demonstrates how to integrate Flask with Google Cloud Logging using the `flask-network-logging` package.
+This example demonstrates how to integrate Flask with Google Cloud Logging using the `flask-remote-logging` package.
 
 ## Features
 
@@ -144,5 +144,5 @@ For production deployment on Google Cloud:
 ## Additional Resources
 
 - [Google Cloud Logging Documentation](https://cloud.google.com/logging/docs)
-- [flask-network-logging Documentation](../../README.md)
+- [flask-remote-logging Documentation](../../README.md)
 - [Google Cloud Authentication Guide](https://cloud.google.com/docs/authentication)

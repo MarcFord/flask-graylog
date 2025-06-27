@@ -1,6 +1,6 @@
 # Flask Network Logging Examples
 
-This directory contains comprehensive example applications demonstrating how to use the flask-network-logging extension with various logging backends in real Flask applications.
+This directory contains comprehensive example applications demonstrating how to use the flask-remote-logging extension with various logging backends in real Flask applications.
 
 ## Available Examples
 
@@ -111,7 +111,7 @@ The application will start on `http://127.0.0.1:5000`
 Logging setup is now **automatic** when you create an extension instance. No need to call `_setup_logging()`:
 
 ```python
-from flask_network_logging import GraylogExtension
+from flask_remote_logging import GraylogExtension
 
 # Old way (no longer needed):
 # graylog = GraylogExtension(app)
@@ -129,7 +129,7 @@ You can now control whether automatic request/response middleware is enabled:
 graylog = GraylogExtension(app, enable_middleware=False)
 
 # Or control via configuration
-app.config['FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE'] = False
+app.config['FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE'] = False
 graylog = GraylogExtension(app)
 ```
 

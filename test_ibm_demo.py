@@ -4,7 +4,7 @@ Quick test script to verify IBM Cloud Logs extension functionality
 """
 
 from flask import Flask
-from flask_network_logging import IBMLog
+from flask_remote_logging import IBMLog
 
 app = Flask(__name__)
 

@@ -7,8 +7,8 @@ import pytest
 from flask import Flask
 from pygelf import GelfTcpHandler
 
-from flask_network_logging import GraylogExtension
-from flask_network_logging.context_filter import GraylogContextFilter
+from flask_remote_logging import GraylogExtension
+from flask_remote_logging.context_filter import GraylogContextFilter
 
 
 class TestGraylogExtension:
@@ -116,7 +116,7 @@ class TestGraylogExtension:
         with pytest.raises(RuntimeError, match="GraylogExtension must be initialized with a Flask app"):
             extension._get_config_from_app()
 
-    @patch("flask_network_logging.extension.GelfTcpHandler")
+    @patch("flask_remote_logging.extension.GelfTcpHandler")
     def test_setup_logging_with_graylog_environment(self, mock_handler_class, app):
         """Test logging setup when environment matches Graylog environment."""
         app.env = "test"  # Matches GRAYLOG_ENVIRONMENT in conftest.py

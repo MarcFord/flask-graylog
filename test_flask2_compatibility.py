@@ -5,7 +5,7 @@ Test Flask 2.0+ compatibility with Flask Network Logging.
 
 from flask import Flask
 import flask
-from flask_network_logging import GraylogExtension
+from flask_remote_logging import GraylogExtension
 
 # Test Flask 2.0+ compatibility
 app = Flask(__name__)

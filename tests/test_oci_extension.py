@@ -12,7 +12,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 from flask import Flask, g, request
 
-from flask_network_logging.oci_extension import OCILogExtension, OCILogHandler
+from flask_remote_logging.oci_extension import OCILogExtension, OCILogHandler
 
 
 class TestOCILogExtension:
@@ -38,7 +38,7 @@ class TestOCILogExtension:
             "OCI_ENVIRONMENT": "production"
         })
 
-        with patch("flask_network_logging.oci_extension.oci"):
+        with patch("flask_remote_logging.oci_extension.oci"):
             extension = OCILogExtension(app=app)
 
         assert extension.app == app
@@ -65,7 +65,7 @@ class TestOCILogExtension:
 
         extension = OCILogExtension()
 
-        with patch("flask_network_logging.oci_extension.oci"):
+        with patch("flask_remote_logging.oci_extension.oci"):
             extension.init_app(app)
 
         assert extension.app == app
@@ -124,7 +124,7 @@ class TestOCILogExtension:
         # Should not raise any exceptions
         extension._setup_logging()
 
-    @patch("flask_network_logging.oci_extension.oci")
+    @patch("flask_remote_logging.oci_extension.oci")
     def test_setup_logging_with_oci_environment(self, mock_oci, app):
         """Test logging setup with OCI environment."""
         app.config.update({
@@ -147,7 +147,7 @@ class TestOCILogExtension:
         # Should complete without exceptions
         assert extension.app == app
 
-    @patch("flask_network_logging.oci_extension.oci")
+    @patch("flask_remote_logging.oci_extension.oci")
     def test_init_backend_with_oci(self, mock_oci):
         """Test OCI backend initialization with OCI SDK available."""
         app = Flask(__name__)
@@ -173,7 +173,7 @@ class TestOCILogExtension:
         assert extension.log_group_id == "ocid1.loggroup.oc1..."
         assert extension.log_id == "ocid1.log.oc1..."
 
-    @patch("flask_network_logging.oci_extension.oci")
+    @patch("flask_remote_logging.oci_extension.oci")
     def test_init_backend_without_oci(self, mock_oci):
         """Test OCI backend initialization with OCI SDK errors."""
         app = Flask(__name__)
@@ -194,12 +194,12 @@ class TestOCILogExtension:
         extension.app = app
         extension.config = {}
 
-        with patch("flask_network_logging.oci_extension.oci", None):
+        with patch("flask_remote_logging.oci_extension.oci", None):
             extension._init_backend()
 
         assert extension.logging_client is None
 
-    @patch("flask_network_logging.oci_extension.oci")
+    @patch("flask_remote_logging.oci_extension.oci")
     def test_create_log_handler_with_client(self, mock_oci):
         """Test log handler creation with OCI client."""
         extension = OCILogExtension()
@@ -208,7 +208,7 @@ class TestOCILogExtension:
         extension.log_id = "ocid1.log.oc1..."
         extension.config = {"OCI_APP_NAME": "test-app"}
 
-        with patch("flask_network_logging.oci_extension.OCILogHandler") as mock_handler_class:
+        with patch("flask_remote_logging.oci_extension.OCILogHandler") as mock_handler_class:
             mock_handler = Mock()
             mock_handler_class.return_value = mock_handler
 
@@ -252,7 +252,7 @@ class TestOCILogExtension:
     def test_middleware_config_key(self):
         """Test middleware config key getter."""
         extension = OCILogExtension()
-        assert extension._get_middleware_config_key() == "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE"
+        assert extension._get_middleware_config_key() == "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE"
 
     def test_skip_reason(self):
         """Test skip reason getter."""
@@ -313,7 +313,7 @@ class TestOCILogHandler:
                 log_id=None  # type: ignore
             )
 
-    @patch("flask_network_logging.oci_extension.oci")
+    @patch("flask_remote_logging.oci_extension.oci")
     def test_emit_success(self, mock_oci):
         """Test successful log emission."""
         mock_client = Mock()
@@ -355,7 +355,7 @@ class TestOCILogHandler:
                 handler.emit(record)
                 mock_handle_error.assert_called_once_with(record)
 
-    @patch("flask_network_logging.oci_extension.oci", None)
+    @patch("flask_remote_logging.oci_extension.oci", None)
     def test_send_log_data_without_oci(self):
         """Test sending log data without OCI SDK."""
         handler = OCILogHandler(
@@ -373,7 +373,7 @@ class TestOCILogHandler:
         with pytest.raises(RuntimeError, match="OCI SDK is not available"):
             handler._send_to_oci_logging(log_entry)
 
-    @patch("flask_network_logging.oci_extension.oci")
+    @patch("flask_remote_logging.oci_extension.oci")
     def test_send_log_data_success(self, mock_oci):
         """Test successful log data sending."""
         mock_client = Mock()
@@ -395,7 +395,7 @@ class TestOCILogHandler:
         call_args = mock_client.put_logs.call_args
         assert call_args.kwargs["log_id"] == "ocid1.log.oc1..."
 
-    @patch("flask_network_logging.oci_extension.oci")
+    @patch("flask_remote_logging.oci_extension.oci")
     def test_handler_integration(self, mock_oci):
         """Test complete handler integration."""
         app = Flask(__name__)

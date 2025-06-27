@@ -25,7 +25,7 @@ author = 'Marc Ford'
 
 # The full version, including alpha/beta/rc tags
 try:
-    from flask_network_logging import __version__
+    from flask_remote_logging import __version__
     release = __version__
     version = '.'.join(release.split('.')[:2])  # Short X.Y version
 except ImportError:

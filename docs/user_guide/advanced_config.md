@@ -6,7 +6,7 @@ You can customize how logs are formatted before sending to remote services:
 
 ```python
 import logging
-from flask_network_logging import NetworkLogging
+from flask_remote_logging import RemoteLogging
 
 def custom_formatter(record):
     """Custom log formatter function."""

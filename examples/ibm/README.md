@@ -1,6 +1,6 @@
 # IBM Cloud Logging Flask Example
 
-This example demonstrates how to integrate Flask with IBM Cloud Logging (LogDNA) using the `flask-network-logging` package.
+This example demonstrates how to integrate Flask with IBM Cloud Logging (LogDNA) using the `flask-remote-logging` package.
 
 ## Features
 
@@ -241,5 +241,5 @@ app.logger.info("Order processed", extra={
 
 - [IBM Cloud Logging Documentation](https://cloud.ibm.com/docs/log-analysis)
 - [LogDNA REST API Documentation](https://docs.logdna.com/reference)
-- [flask-network-logging Documentation](../../README.md)
+- [flask-remote-logging Documentation](../../README.md)
 - [IBM Cloud CLI Reference](https://cloud.ibm.com/docs/cli)

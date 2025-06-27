@@ -1,6 +1,6 @@
 # Oracle Cloud Infrastructure (OCI) Logging Flask Example
 
-This example demonstrates how to integrate Flask with Oracle Cloud Infrastructure Logging using the `flask-network-logging` package.
+This example demonstrates how to integrate Flask with Oracle Cloud Infrastructure Logging using the `flask-remote-logging` package.
 
 ## Features
 
@@ -280,5 +280,5 @@ app.logger.info("Resource operation", extra={
 - [OCI Logging Documentation](https://docs.oracle.com/en-us/iaas/Content/Logging/home.htm)
 - [OCI CLI Documentation](https://docs.oracle.com/en-us/iaas/tools/oci-cli/3.22.3/oci_cli_docs/)
 - [OCI Python SDK Documentation](https://oracle-cloud-infrastructure-python-sdk.readthedocs.io/)
-- [flask-network-logging Documentation](../../README.md)
+- [flask-remote-logging Documentation](../../README.md)
 - [OCI IAM Policies for Logging](https://docs.oracle.com/en-us/iaas/Content/Identity/Reference/loggingpolicyreference.htm)

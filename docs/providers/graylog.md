@@ -5,14 +5,14 @@ Graylog is an open-source log management platform. This backend uses GELF (Grayl
 ## Installation
 
 ```bash
-pip install flask-network-logging[graylog]
+pip install flask-remote-logging[graylog]
 ```
 
 ## Configuration
 
 ```python
 from flask import Flask
-from flask_network_logging import NetworkLogging
+from flask_remote_logging import RemoteLogging
 
 app = Flask(__name__)
 
@@ -25,7 +25,7 @@ app.config['GRAYLOG_FACILITY'] = 'flask-app'
 app.config['GRAYLOG_USE_TLS'] = True
 app.config['GRAYLOG_CERT_PATH'] = '/path/to/cert'
 
-network_logging = NetworkLogging()
+network_logging = RemoteLogging()
 network_logging.init_app(app)
 ```
 

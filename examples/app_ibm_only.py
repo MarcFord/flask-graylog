@@ -27,7 +27,7 @@ Optional Environment Variables:
 
 import os
 from flask import Flask, request, jsonify
-from flask_network_logging import IBMLogExtension
+from flask_remote_logging import IBMLogExtension
 
 app = Flask(__name__)
 

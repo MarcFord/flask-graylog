@@ -9,7 +9,7 @@ Choose the installation method that matches your logging backend needs:
 ### Basic Installation
 
 ```bash
-pip install flask-network-logging
+pip install flask-remote-logging
 ```
 
 ### Backend-Specific Installation
@@ -18,28 +18,28 @@ Install only the dependencies you need:
 
 ```bash
 # For Graylog
-pip install flask-network-logging[graylog]
+pip install flask-remote-logging[graylog]
 
 # For AWS CloudWatch
-pip install flask-network-logging[aws]
+pip install flask-remote-logging[aws]
 
 # For Google Cloud Logging
 pip install flask-network_logging[gcp]
 
 # For Azure Monitor
-pip install flask-network-logging[azure]
+pip install flask-remote-logging[azure]
 
 # For IBM Cloud Logs
-pip install flask-network-logging[ibm]
+pip install flask-remote-logging[ibm]
 
 # For Oracle Cloud Infrastructure
-pip install flask-network-logging[oci]
+pip install flask-remote-logging[oci]
 
 # For multiple backends
-pip install flask-network-logging[graylog,aws,gcp]
+pip install flask-remote-logging[graylog,aws,gcp]
 
 # For all backends
-pip install flask-network-logging[all]
+pip install flask-remote-logging[all]
 ```
 
 ## Your First Logging Setup
@@ -48,7 +48,7 @@ pip install flask-network-logging[all]
 
 ```python
 from flask import Flask
-from flask_network_logging import GraylogExtension
+from flask_remote_logging import GraylogExtension
 
 app = Flask(__name__)
 
@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
 ```python
 from flask import Flask
-from flask_network_logging import AWSLogExtension
+from flask_remote_logging import AWSLogExtension
 
 app = Flask(__name__)
 
@@ -99,7 +99,7 @@ def hello():
 
 ```python
 from flask import Flask
-from flask_network_logging import GCPLogExtension
+from flask_remote_logging import GCPLogExtension
 
 app = Flask(__name__)
 
@@ -178,7 +178,7 @@ app.config.update({
     'GRAYLOG_ENVIRONMENT': 'production',
     
     # Middleware control
-    'FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE': True,
+    'FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE': True,
 })
 ```
 
@@ -191,7 +191,7 @@ If you want to handle logging manually:
 graylog = GraylogExtension(app, enable_middleware=False)
 
 # Or via configuration
-app.config['FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE'] = False
+app.config['FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE'] = False
 graylog = GraylogExtension(app)
 ```
 
@@ -234,7 +234,7 @@ Look for logs containing:
 **Import Errors**
 ```bash
 # Make sure you installed the right backend dependencies
-pip install flask-network-logging[graylog]
+pip install flask-remote-logging[graylog]
 ```
 
 **Connection Issues**
@@ -250,4 +250,4 @@ print(app.config)
 app.config['GRAYLOG_ENVIRONMENT'] = 'development'  # Match your Flask env
 ```
 
-Need more help? Check the [full documentation](user_guide/index.md) or [open an issue](https://github.com/MarcFord/flask-network-logging/issues).
+Need more help? Check the [full documentation](user_guide/index.md) or [open an issue](https://github.com/MarcFord/flask-remote-logging/issues).

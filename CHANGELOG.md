@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced documentation with both logging backends
 
 ### Changed
-- **BREAKING**: Renamed package from `flask-graylog` to `flask-network-logging`
+- **BREAKING**: Renamed package from `flask-graylog` to `flask-remote-logging`
 - **BREAKING**: Main import path changed from `flask_graylog` to `flask_network_logging`
 - Project scope expanded from Graylog-only to multiple remote logging services
 - Package description updated to reflect broader scope
@@ -71,7 +71,7 @@ from flask_network_logging import GCPLogExtension
 - Configurable log levels and filtering
 - Production-ready logging setup
 
-[2.0.0]: https://github.com/MarcFord/flask-network-logging/compare/v1.0.2...v2.0.0
-[1.0.2]: https://github.com/MarcFord/flask-network-logging/compare/v1.0.1...v1.0.2
-[1.0.1]: https://github.com/MarcFord/flask-network-logging/compare/v1.0.0...v1.0.1
-[1.0.0]: https://github.com/MarcFord/flask-network-logging/releases/tag/v1.0.0
+[2.0.0]: https://github.com/MarcFord/flask-remote-logging/compare/v1.0.2...v2.0.0
+[1.0.2]: https://github.com/MarcFord/flask-remote-logging/compare/v1.0.1...v1.0.2
+[1.0.1]: https://github.com/MarcFord/flask-remote-logging/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/MarcFord/flask-remote-logging/releases/tag/v1.0.0

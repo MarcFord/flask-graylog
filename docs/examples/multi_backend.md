@@ -4,7 +4,7 @@
 
 ```python
 from flask import Flask
-from flask_network_logging import AWSExtension, GCPExtension, AzureExtension
+from flask_remote_logging import AWSLogExtension, GCPLogExtension, AzureLogExtension
 
 app = Flask(__name__)
 
@@ -23,9 +23,9 @@ app.config['AZURE_SHARED_KEY'] = 'shared-key'
 app.config['AZURE_LOG_TYPE'] = 'FlaskLogs'
 
 # Initialize all backends
-aws_logging = AWSExtension()
-gcp_logging = GCPExtension()
-azure_logging = AzureExtension()
+aws_logging = AWSLogExtension()
+gcp_logging = GCPLogExtension()
+azure_logging = AzureLogExtension()
 
 aws_logging.init_app(app)
 gcp_logging.init_app(app)
@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
 ```python
 from flask import Flask
-from flask_network_logging import NetworkLogging, AWSExtension
+from flask_remote_logging import RemoteLogging, AWSLogExtension
 
 app = Flask(__name__)
 
@@ -58,8 +58,8 @@ app.config['AWS_REGION'] = 'us-east-1'
 app.config['AWS_LOG_GROUP'] = 'flask-app-logs'
 
 # Initialize with middleware control
-network_logging = NetworkLogging()  # Default middleware enabled
-aws_logging = AWSExtension(enable_middleware=False)  # No middleware
+network_logging = RemoteLogging()  # Default middleware enabled
+aws_logging = AWSLogExtension(enable_middleware=False)  # No middleware
 
 network_logging.init_app(app)
 aws_logging.init_app(app)

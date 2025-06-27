@@ -44,7 +44,7 @@ class AzureLogExtension(BaseLoggingExtension):
     Example:
         ```python
         from flask import Flask
-        from flask_network_logging import AzureLogExtension
+        from flask_remote_logging import AzureLogExtension
 
         app = Flask(__name__)
         app.config.update({
@@ -123,7 +123,7 @@ class AzureLogExtension(BaseLoggingExtension):
             "AZURE_LOG_LEVEL": self.app.config.get("AZURE_LOG_LEVEL", os.getenv("AZURE_LOG_LEVEL", "INFO")),
             "AZURE_ENVIRONMENT": self.app.config.get("AZURE_ENVIRONMENT", os.getenv("AZURE_ENVIRONMENT", "development")),
             "AZURE_TIMEOUT": self.app.config.get("AZURE_TIMEOUT", os.getenv("AZURE_TIMEOUT", "30")),
-            "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get("FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE", None),
+            "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get("FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE", None),
         }
 
     def _init_backend(self) -> None:
@@ -167,7 +167,7 @@ class AzureLogExtension(BaseLoggingExtension):
 
     def _get_middleware_config_key(self) -> str:
         """Get the configuration key for middleware override."""
-        return "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE"
+        return "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE"
 
     def _get_skip_reason(self) -> str:
         """Get the reason why setup is being skipped."""

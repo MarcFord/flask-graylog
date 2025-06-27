@@ -5,14 +5,14 @@ Send logs to Oracle Cloud Infrastructure (OCI) Logging service.
 ## Installation
 
 ```bash
-pip install flask-network-logging[oci]
+pip install flask-remote-logging[oci]
 ```
 
 ## Configuration
 
 ```python
 from flask import Flask
-from flask_network_logging import OCIExtension
+from flask_remote_logging import OCILogExtension
 
 app = Flask(__name__)
 
@@ -22,7 +22,7 @@ app.config['OCI_CONFIG_PROFILE'] = 'DEFAULT'
 app.config['OCI_LOG_GROUP_ID'] = 'ocid1.loggroup.oc1...'
 app.config['OCI_LOG_ID'] = 'ocid1.log.oc1...'
 
-oci_logging = OCIExtension()
+oci_logging = OCILogExtension()
 oci_logging.init_app(app)
 ```
 

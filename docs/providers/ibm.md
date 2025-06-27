@@ -5,14 +5,14 @@ Send logs to IBM Cloud Logs service.
 ## Installation
 
 ```bash
-pip install flask-network-logging[ibm]
+pip install flask-remote-logging[ibm]
 ```
 
 ## Configuration
 
 ```python
 from flask import Flask
-from flask_network_logging import IBMExtension
+from flask_remote_logging import IBMLogExtension
 
 app = Flask(__name__)
 
@@ -21,7 +21,7 @@ app.config['IBM_INGESTION_URL'] = 'https://your-instance.logdna.com/logs/ingest'
 app.config['IBM_INGESTION_KEY'] = 'your-ingestion-key'
 app.config['IBM_HOSTNAME'] = 'flask-app'
 
-ibm_logging = IBMExtension()
+ibm_logging = IBMLogExtension()
 ibm_logging.init_app(app)
 ```
 

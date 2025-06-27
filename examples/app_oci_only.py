@@ -27,7 +27,7 @@ Optional Environment Variables:
 
 import os
 from flask import Flask, request, jsonify
-from flask_network_logging import OCILogExtension
+from flask_remote_logging import OCILogExtension
 
 app = Flask(__name__)
 

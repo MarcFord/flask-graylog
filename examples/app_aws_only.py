@@ -21,7 +21,7 @@ from datetime import datetime
 
 from flask import Flask, jsonify, request, g
 
-from flask_network_logging import AWSLogExtension
+from flask_remote_logging import AWSLogExtension
 
 # Create Flask application
 app = Flask(__name__)

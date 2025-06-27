@@ -9,14 +9,14 @@ def setup_middleware(app: Flask) -> None:
 def before_request():
     """Middleware handler to record start time of each request"""
     # Record request start time, so we can get response time later
-    g.flask_network_logging = time.time()
+    g.flask_remote_logging = time.time()
 
 def after_request(response: Response) -> Response:
     """Middleware helper to report each flask response to graylog"""
     # Calculate the elapsed time for this request
     elapsed = 0
-    if hasattr(g, 'flask_network_logging'):
-        elapsed = time.time() - g.flask_network_logging
+    if hasattr(g, 'flask_remote_logging'):
+        elapsed = time.time() - g.flask_remote_logging
         elapsed = int(round(1000 * elapsed))
 
     # Extra metadata to include with the message

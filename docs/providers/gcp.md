@@ -5,14 +5,14 @@ Send logs to Google Cloud Logging (formerly Stackdriver).
 ## Installation
 
 ```bash
-pip install flask-network-logging[gcp]
+pip install flask-remote-logging[gcp]
 ```
 
 ## Configuration
 
 ```python
 from flask import Flask
-from flask_network_logging import GCPExtension
+from flask_remote_logging import GCPLogExtension
 
 app = Flask(__name__)
 
@@ -23,7 +23,7 @@ app.config['GCP_LOG_NAME'] = 'flask-app'
 # Optional: specify credentials file
 app.config['GOOGLE_APPLICATION_CREDENTIALS'] = '/path/to/service-account.json'
 
-gcp_logging = GCPExtension()
+gcp_logging = GCPLogExtension()
 gcp_logging.init_app(app)
 ```
 

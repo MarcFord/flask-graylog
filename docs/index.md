@@ -1,9 +1,9 @@
 # Flask Network Logging Documentation
 
-[![CI](https://github.com/MarcFord/flask-network-logging/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MarcFord/flask-network-logging/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/MarcFord/flask-network-logging/branch/main/graph/badge.svg)](https://codecov.io/gh/MarcFord/flask-network-logging)
+[![CI](https://github.com/MarcFord/flask-remote-logging/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MarcFord/flask-remote-logging/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/MarcFord/flask-remote-logging/branch/main/graph/badge.svg)](https://codecov.io/gh/MarcFord/flask-remote-logging)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MarcFord/flask-network-logging/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MarcFord/flask-remote-logging/blob/main/LICENSE)
 
 A comprehensive Flask extension for sending application logs to remote logging services including Graylog, Google Cloud Logging, AWS CloudWatch Logs, Azure Monitor Logs, IBM Cloud Logs, and Oracle Cloud Infrastructure Logging.
 
@@ -99,17 +99,17 @@ license
 
 ```bash
 # Install with specific backend support
-pip install flask-network-logging[graylog,aws,gcp]
+pip install flask-remote-logging[graylog,aws,gcp]
 
 # Or install all backends
-pip install flask-network-logging[all]
+pip install flask-remote-logging[all]
 ```
 
 ### Basic Usage
 
 ```python
 from flask import Flask
-from flask_network_logging import GraylogExtension
+from flask_remote_logging import GraylogExtension
 
 app = Flask(__name__)
 app.config.update({
@@ -145,7 +145,7 @@ def hello():
 ## Community & Support
 
 - 📖 **Documentation**: You're reading it!
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/MarcFord/flask-network-logging/issues)
-- 💡 **Feature Requests**: [GitHub Issues](https://github.com/MarcFord/flask-network-logging/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/MarcFord/flask-network-logging/discussions)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/MarcFord/flask-remote-logging/issues)
+- 💡 **Feature Requests**: [GitHub Issues](https://github.com/MarcFord/flask-remote-logging/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/MarcFord/flask-remote-logging/discussions)
 - 🤝 **Contributing**: [Contributing Guide](contributing.md)

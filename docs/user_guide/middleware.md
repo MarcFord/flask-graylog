@@ -21,5 +21,5 @@ Each backend can have middleware enabled or disabled independently:
 
 ```python
 # When initializing extensions
-aws_logging = AWSExtension(enable_middleware=False)
+aws_logging = AWSLogExtension(enable_middleware=False)
 ```

@@ -1,6 +1,6 @@
 # Multi-Backend Logging Flask Example
 
-This example demonstrates how to integrate Flask with multiple cloud logging services simultaneously using the `flask-network-logging` package. This approach is ideal for multi-cloud deployments, backup logging strategies, service migrations, and centralized log aggregation.
+This example demonstrates how to integrate Flask with multiple cloud logging services simultaneously using the `flask-remote-logging` package. This approach is ideal for multi-cloud deployments, backup logging strategies, service migrations, and centralized log aggregation.
 
 ## Supported Backends
 
@@ -310,7 +310,7 @@ Configure different backends for different tenants by using tenant-specific conf
 
 ## Additional Resources
 
-- [flask-network-logging Documentation](../../README.md)
+- [flask-remote-logging Documentation](../../README.md)
 - [Individual Backend Examples](../)
 - [Graylog Example](../graylog/README.md)
 - [AWS Example](../aws/README.md)

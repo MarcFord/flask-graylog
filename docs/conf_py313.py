@@ -16,7 +16,7 @@ copyright = '2025, Marc Ford'
 author = 'Marc Ford'
 
 try:
-    from flask_network_logging import __version__
+    from flask_remote_logging import __version__
     release = __version__
     version = '.'.join(release.split('.')[:2])
 except ImportError:

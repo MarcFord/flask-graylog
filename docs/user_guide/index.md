@@ -36,7 +36,7 @@ troubleshooting
 Flask Network Logging uses a modular architecture:
 
 ```python
-from flask_network_logging import GraylogExtension
+from flask_remote_logging import GraylogExtension
 
 # Each backend is a separate extension class
 graylog = GraylogExtension(app)   # For Graylog
@@ -94,7 +94,7 @@ Most applications use a single logging backend:
 
 ```python
 from flask import Flask
-from flask_network_logging import GraylogExtension
+from flask_remote_logging import GraylogExtension
 
 app = Flask(__name__)
 app.config.update({
@@ -111,7 +111,7 @@ graylog = GraylogExtension(app)
 For complex deployments, you can use multiple backends:
 
 ```python
-from flask_network_logging import (
+from flask_remote_logging import (
     GraylogExtension, 
     AWSLogExtension, 
     GCPLogExtension
@@ -129,7 +129,7 @@ Choose backends based on environment:
 
 ```python
 import os
-from flask_network_logging import GraylogExtension, AWSLogExtension
+from flask_remote_logging import GraylogExtension, AWSLogExtension
 
 if os.getenv('DEPLOYMENT_ENV') == 'aws':
     logger = AWSLogExtension(app)
@@ -191,7 +191,7 @@ app.config.update({
     'GRAYLOG_LEVEL': 'INFO',
     'GRAYLOG_ENVIRONMENT': 'production',
     'GRAYLOG_EXTRA_FIELDS': True,
-    'FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE': True,
+    'FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE': True,
 })
 ```
 

@@ -21,7 +21,8 @@ from datetime import datetime
 
 from flask import Flask, jsonify, request, g
 
-from flask_network_logging import GraylogExtension
+from flask_remote_logging import GraylogExtension
+from flask_remote_logging.compat import set_flask_env
 
 # Create Flask application
 app = Flask(__name__)
@@ -226,8 +227,9 @@ def internal_error(error):
     }), 500
 
 if __name__ == '__main__':
-    # Set Flask environment
-    app.env = os.getenv('FLASK_ENV', 'development')
+    # Set Flask environment (compatible with Flask 1.x and 2.x)
+    flask_env = os.getenv('FLASK_ENV', 'development')
+    set_flask_env(app, flask_env)
     
     # Log application startup
     app.logger.info("Flask application starting")

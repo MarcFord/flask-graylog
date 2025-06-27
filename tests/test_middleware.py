@@ -12,7 +12,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from flask import Flask, g, jsonify
 
-from src.flask_network_logging.middleware import after_request, before_request, setup_middleware
+from src.flask_remote_logging.middleware import after_request, before_request, setup_middleware
 
 
 class TestMiddleware:
@@ -42,9 +42,9 @@ class TestMiddleware:
             after_time = time.time()
             
             # Check that timing was set
-            assert hasattr(g, 'flask_network_logging')
-            assert isinstance(g.flask_network_logging, float)
-            assert before_time <= g.flask_network_logging <= after_time
+            assert hasattr(g, 'flask_remote_logging')
+            assert isinstance(g.flask_remote_logging, float)
+            assert before_time <= g.flask_remote_logging <= after_time
 
     def test_after_request_calculates_duration(self):
         """Test that after_request calculates request duration."""
@@ -52,7 +52,7 @@ class TestMiddleware:
         
         with app.test_request_context('/test'):
             # Set up timing like before_request would
-            g.flask_network_logging = time.time() - 0.5  # 500ms ago
+            g.flask_remote_logging = time.time() - 0.5  # 500ms ago
             
             # Create a mock response
             response = MagicMock()
@@ -109,7 +109,7 @@ class TestMiddleware:
                                      method='POST',
                                      headers={'User-Agent': 'test-agent',
                                             'Content-Type': 'application/json'}):
-            g.flask_network_logging = time.time()
+            g.flask_remote_logging = time.time()
             
             # Create a mock response
             response = MagicMock()
@@ -145,7 +145,7 @@ class TestMiddleware:
         app = Flask(__name__)
         
         with app.test_request_context('/', headers={'Cookie': 'secret=value'}):
-            g.flask_network_logging = time.time()
+            g.flask_remote_logging = time.time()
             
             # Create a mock response with sensitive headers
             response = MagicMock()
@@ -172,7 +172,7 @@ class TestMiddleware:
         with app.test_request_context('/test'):
             from flask import g
             
-            g.flask_network_logging = time.time()
+            g.flask_remote_logging = time.time()
             
             response = MagicMock()
             response.headers = [('Content-Type', 'text/html')]  # Make it iterable
@@ -180,7 +180,7 @@ class TestMiddleware:
             
             with patch.object(app.logger, 'info') as mock_logger:
                 # Patch the middleware's access to request.endpoint and view_args
-                with patch('src.flask_network_logging.middleware.request') as mock_request:
+                with patch('src.flask_remote_logging.middleware.request') as mock_request:
                     mock_request.endpoint = 'test_endpoint'
                     mock_request.view_args = {'user_id': 123}
                     mock_request.environ = {'REQUEST_METHOD': 'GET', 'PATH_INFO': '/test'}
@@ -202,7 +202,7 @@ class TestMiddlewareIntegration:
 
     def test_middleware_with_graylog_extension(self):
         """Test middleware integration with GraylogExtension."""
-        from src.flask_network_logging import GraylogExtension
+        from src.flask_remote_logging import GraylogExtension
         
         app = Flask(__name__)
         app.config.update({
@@ -219,7 +219,7 @@ class TestMiddlewareIntegration:
 
     def test_middleware_disabled(self):
         """Test that middleware can be disabled."""
-        from src.flask_network_logging import GraylogExtension
+        from src.flask_remote_logging import GraylogExtension
         
         app = Flask(__name__)
         app.config.update({
@@ -269,7 +269,7 @@ class TestMiddlewareIntegration:
     def test_middleware_with_all_extensions(self, extension_class, config):
         """Test middleware integration with all extensions."""
         # Import the extension class dynamically
-        module = __import__('src.flask_network_logging', fromlist=[extension_class])
+        module = __import__('src.flask_remote_logging', fromlist=[extension_class])
         ExtensionClass = getattr(module, extension_class)
         
         app = Flask(__name__)
@@ -288,13 +288,13 @@ class TestMiddlewareIntegration:
 
     def test_middleware_config_override(self):
         """Test that middleware can be controlled via Flask config."""
-        from src.flask_network_logging import GraylogExtension
+        from src.flask_remote_logging import GraylogExtension
         
         app = Flask(__name__)
         app.config.update({
             'GRAYLOG_HOST': 'localhost',
             'GRAYLOG_PORT': 12201,
-            'FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE': False
+            'FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE': False
         })
         
         # Count existing middleware
@@ -310,7 +310,7 @@ class TestMiddlewareIntegration:
 
     def test_middleware_end_to_end(self):
         """Test middleware functionality end-to-end with a real request."""
-        from src.flask_network_logging import GraylogExtension
+        from src.flask_remote_logging import GraylogExtension
         
         app = Flask(__name__)
         app.config.update({

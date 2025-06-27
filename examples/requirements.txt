@@ -4,7 +4,7 @@
 Flask>=1.1.4,<2.0.0
 pygelf>=0.4.2
 user-agents>=2.0.0
-MarkupSafe<2.1.0
+MarkupSafe<3.1.0
 
 # The flask-graylog extension
 # In production, you would install from PyPI: flask-graylog>=1.0.0

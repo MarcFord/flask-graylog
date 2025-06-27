@@ -1,7 +1,7 @@
 # Requirements for the Flask Graylog Example Application
 
 # Core dependencies (same as main package)
-Flask>=1.1.4,<2.0.0
+Flask>=1.1.4,<4.0.0
 pygelf>=0.4.2
 user-agents>=2.0.0
 MarkupSafe<2.1.0

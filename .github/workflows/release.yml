@@ -42,7 +42,7 @@ jobs:
     - name: Check package version from git
       run: |
         TAG_VERSION=${GITHUB_REF#refs/tags/v}
-        PACKAGE_VERSION=$(uv run python -c "import src.flask_graylog; print(src.flask_graylog.__version__)")
+        PACKAGE_VERSION=$(uv run python -c "import src.flask_remote_logging; print(src.flask_remote_logging.__version__)")
         echo "📦 Tag version: $TAG_VERSION"
         echo "📦 Package version (from git): $PACKAGE_VERSION"
         if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
@@ -92,15 +92,15 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
         body: |
-          🎉 **flask-graylog ${{ github.ref_name }}** has been released!
+          🎉 **flask-remote-logging ${{ github.ref_name }}** has been released!
           
           ${{ steps.changelog.outputs.CHANGELOG }}
           
           📦 **Installation:**
           ```bash
-          pip install flask-graylog==${{ github.ref_name }}
+          pip install flask-remote-logging==${{ github.ref_name }}
           ```
           
-          🔗 **PyPI:** https://pypi.org/project/flask-graylog/${{ github.ref_name }}/
+          🔗 **PyPI:** https://pypi.org/project/flask-remote-logging/${{ github.ref_name }}/
         draft: false
         prerelease: false

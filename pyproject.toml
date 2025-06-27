@@ -26,9 +26,8 @@ classifiers = [
     "Topic :: Communications",
 ]
 dependencies = [
-    "flask>=1.1.4,<2.0.0",
+    "flask>=1.1.4,<3.0.0",
     "user-agents>=2.0.0",
-    "MarkupSafe<2.1.0",
 ]
 
 [project.optional-dependencies]
@@ -84,6 +83,12 @@ dev = [
     "bandit>=1.7.0",
     "flake8>=4.0",
     "pre-commit>=2.20.0",
+]
+
+# Documentation dependencies
+docs = [
+    "sphinx>=5.0.0",
+    "myst-parser>=1.0.0",
 ]
 
 [project.urls]

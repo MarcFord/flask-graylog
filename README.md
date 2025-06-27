@@ -18,6 +18,23 @@ A Flask extension for sending application logs to remote logging services includ
 - 🏷️ Custom field support
 - 🔒 Production-ready with comprehensive testing
 - 🐍 Python 3.9+ support
+- 📚 Comprehensive documentation
+
+## Documentation
+
+The full documentation for this library is available in the `docs/` directory and can be built using:
+
+```bash
+./build_docs.sh
+```
+
+This script creates a Python 3.9 virtual environment (needed due to compatibility issues with Python 3.13+) and builds the HTML documentation, which you can then view in your browser.
+
+The docs cover:
+- Detailed API documentation
+- Integration guides for all supported logging backends
+- Advanced configuration options
+- Best practices for production environments
 - 📡 Support for Graylog via GELF
 - ☁️ Support for Google Cloud Logging
 - 🚀 Support for AWS CloudWatch Logs

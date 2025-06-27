@@ -111,7 +111,14 @@ class GraylogExtension(BaseLoggingExtension):
         Returns:
             GelfTcpHandler for production environment, StreamHandler otherwise
         """
-        if str(self.app.env).lower() == self.app.config.get("GRAYLOG_ENVIRONMENT", "production").lower():
+        # Flask 2.0+ compatibility: use config['ENV'] instead of app.env
+        if self.app is None:
+            return None
+            
+        flask_env = getattr(self.app, 'env', None) or self.app.config.get('ENV', 'production')
+        target_env = self.app.config.get("GRAYLOG_ENVIRONMENT", "production")
+        
+        if str(flask_env).lower() == target_env.lower():
             if GelfTcpHandler is None:
                 raise ImportError(
                     "pygelf is required for Graylog support. "

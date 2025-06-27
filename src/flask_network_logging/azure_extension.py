@@ -2,7 +2,7 @@
 Azure Monitor Logs Extension for Flask Network Logging
 
 This module provides the AzureLogExtension class for sending Flask application logs
-to Azure Monitor Logs (Azure Log Analytics). It integrates with the flask-network-logging 
+to Azure Monitor Logs (Azure Log Analytics). It integrates with the flask-network-logging
 package to provide comprehensive logging capabilities for Azure environments.
 """
 
@@ -12,7 +12,6 @@ import hmac
 import json
 import logging
 import os
-import time
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional
 
@@ -87,7 +86,7 @@ class AzureLogExtension:
         self.additional_logs = additional_logs or []
         self.context_filter = context_filter
         self.log_formatter = log_formatter
-        self.config = {}
+        self.config: dict[str, Any] = {}
         self.workspace_id = None
         self.workspace_key = None
         self.log_type = None
@@ -320,7 +319,7 @@ class AzureMonitorHandler(logging.Handler):
             # Send to Azure Monitor
             self._send_log_data([log_data])
 
-        except Exception as e:
+        except Exception:
             # Don't let logging errors break the application
             self.handleError(record)
 
@@ -365,6 +364,6 @@ class AzureMonitorHandler(logging.Handler):
             if response.status_code not in [200, 202]:
                 raise Exception(f"Azure Monitor API returned status code {response.status_code}: {response.text}")
 
-        except Exception as e:
+        except Exception:
             # Re-raise the exception to be handled by the emit method
             raise

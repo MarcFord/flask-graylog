@@ -88,7 +88,7 @@ class OCILogExtension:
         self.additional_logs = additional_logs or []
         self.context_filter = context_filter
         self.log_formatter = log_formatter
-        self.config = {}
+        self.config: dict[str, Any] = {}
         self.logging_client = None
 
         if app is not None:
@@ -292,7 +292,7 @@ class OCILoggingHandler(logging.Handler):
             # Send to OCI Logging
             self._send_log_entry(log_entry)
 
-        except Exception as e:
+        except Exception:
             # Don't let logging errors break the application
             self.handleError(record)
 

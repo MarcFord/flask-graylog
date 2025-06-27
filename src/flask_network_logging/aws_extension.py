@@ -84,7 +84,7 @@ class AWSLogExtension:
         self.additional_logs = additional_logs or []
         self.context_filter = context_filter
         self.log_formatter = log_formatter
-        self.config = {}
+        self.config: dict[str, Any] = {}
         self.cloudwatch_client = None
         self.log_group = None
         self.log_stream = None
@@ -335,7 +335,7 @@ class CloudWatchHandler(logging.Handler):
             # Send to CloudWatch
             self._send_log_event(log_event)
 
-        except Exception as e:
+        except Exception:
             # Don't let logging errors break the application
             self.handleError(record)
 

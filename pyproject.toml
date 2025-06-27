@@ -52,6 +52,11 @@ azure = [
     "requests>=2.25.0",
 ]
 
+# IBM Cloud Logs support
+ibm = [
+    "requests>=2.25.0",
+]
+
 # Install all backends
 all = [
     "pygelf>=0.4.2",

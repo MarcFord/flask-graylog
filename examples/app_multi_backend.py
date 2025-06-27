@@ -3,13 +3,14 @@
 Flask Network Logging Multi-Backend Example
 
 This example demonstrates how to use the flask-network-logging extension to send logs
-to multiple remote logging services from a Flask application, including Azure Monitor.
+to multiple remote logging services from a Flask application, including all supported backends.
 
 Features demonstrated:
 - Graylog setup and configuration
 - Google Cloud Logging setup and configuration  
 - AWS CloudWatch Logs setup and configuration
 - Azure Monitor Logs setup and configuration
+- IBM Cloud Logs setup and configuration
 - Using multiple extensions simultaneously
 - Different log levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 - Custom fields in log messages
@@ -26,7 +27,7 @@ from datetime import datetime
 
 from flask import Flask, jsonify, request, g
 
-from flask_network_logging import GraylogExtension, GCPLogExtension, AWSLogExtension, AzureLogExtension
+from flask_network_logging import GraylogExtension, GCPLogExtension, AWSLogExtension, AzureLogExtension, IBMLogExtension
 
 # Create Flask application
 app = Flask(__name__)
@@ -62,6 +63,15 @@ app.config.update({
     'AZURE_LOG_LEVEL': os.getenv('AZURE_LOG_LEVEL', 'INFO'),
     'AZURE_ENVIRONMENT': os.getenv('AZURE_ENVIRONMENT', 'development'),
     'AZURE_TIMEOUT': os.getenv('AZURE_TIMEOUT', '30'),
+    
+    # IBM Cloud Logs configuration
+    'IBM_INGESTION_KEY': os.getenv('IBM_INGESTION_KEY'),
+    'IBM_HOSTNAME': os.getenv('IBM_HOSTNAME'),
+    'IBM_APP_NAME': os.getenv('IBM_APP_NAME', 'FlaskMultiBackendLogs'),
+    'IBM_ENV': os.getenv('IBM_ENV', 'development'),
+    'IBM_LOG_LEVEL': os.getenv('IBM_LOG_LEVEL', 'INFO'),
+    'IBM_ENVIRONMENT': os.getenv('IBM_ENVIRONMENT', 'development'),
+    'IBM_TAGS': os.getenv('IBM_TAGS', 'flask,multi-backend,example'),
 })
 
 
@@ -83,12 +93,14 @@ graylog = GraylogExtension(app, get_current_user=get_current_user)
 gcp_log = GCPLogExtension(app, get_current_user=get_current_user)
 aws_log = AWSLogExtension(app, get_current_user=get_current_user)
 azure_log = AzureLogExtension(app, get_current_user=get_current_user)
+ibm_log = IBMLogExtension(app, get_current_user=get_current_user)
 
 # Set up logging for all backends
 graylog._setup_logging()
 gcp_log._setup_logging()
 aws_log._setup_logging()
 azure_log._setup_logging()
+ibm_log._setup_logging()
 
 
 @app.before_request
@@ -317,6 +329,8 @@ def get_configured_backends():
         backends.append('AWS CloudWatch Logs')
     if app.config.get('AZURE_WORKSPACE_ID'):
         backends.append('Azure Monitor Logs')
+    if app.config.get('IBM_INGESTION_KEY'):
+        backends.append('IBM Cloud Logs')
     
     return backends
 

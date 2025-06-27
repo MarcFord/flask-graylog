@@ -5,7 +5,7 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MarcFord/flask-network-logging/blob/main/LICENSE)
 
-A Flask extension for sending application logs to remote logging services including Graylog via GELF (Graylog Extended Log Format), Google Cloud Logging, AWS CloudWatch Logs, and Azure Monitor Logs.
+A Flask extension for sending application logs to remote logging services including Graylog via GELF (Graylog Extended Log Format), Google Cloud Logging, AWS CloudWatch Logs, Azure Monitor Logs, and IBM Cloud Logs.
 
 > **📊 Badge Status**: The CI badge shows the latest build status. The codecov badge will update once coverage reports are uploaded to codecov.io. PyPI badges will appear after the first release.
 
@@ -22,6 +22,7 @@ A Flask extension for sending application logs to remote logging services includ
 - ☁️ Support for Google Cloud Logging
 - 🚀 Support for AWS CloudWatch Logs
 - 📊 Support for Azure Monitor Logs
+- 🔵 Support for IBM Cloud Logs
 
 ## Installation
 
@@ -55,6 +56,11 @@ pip install flask-network-logging[aws]
 **For Azure Monitor Logs support:**
 ```bash
 pip install flask-network-logging[azure]
+```
+
+**For IBM Cloud Logs support:**
+```bash
+pip install flask-network-logging[ibm]
 ```
 
 **For multiple backends:**
@@ -199,6 +205,37 @@ if __name__ == '__main__':
     app.run()
 ```
 
+### IBM Cloud Logs Integration
+
+```python
+from flask import Flask
+from flask_network_logging import IBMLog
+
+app = Flask(__name__)
+
+# Configure IBM Cloud Logs
+app.config.update({
+    'IBM_INGESTION_KEY': 'your-ingestion-key',
+    'IBM_HOSTNAME': 'your-hostname',
+    'IBM_APP_NAME': 'your-app-name',
+    'IBM_ENV': 'production',
+    'IBM_LOG_LEVEL': 'INFO',
+    'IBM_ENVIRONMENT': 'production'
+})
+
+# Initialize extension
+ibm_log = IBMLog(app)
+ibm_log._setup_logging()
+
+@app.route('/')
+def hello():
+    app.logger.info("Hello world endpoint accessed")
+    return "Hello, World!"
+
+if __name__ == '__main__':
+    app.run()
+```
+
 ## Examples
 
 Check out the comprehensive example application in the [`examples/`](examples/) directory:
@@ -264,6 +301,23 @@ cd examples/
 | `AZURE_LOG_LEVEL` | Minimum log level | `WARNING` |
 | `AZURE_ENVIRONMENT` | Environment where logs should be sent to Azure | `production` |
 | `AZURE_TIMEOUT` | HTTP request timeout in seconds | `30` |
+
+### IBM Cloud Logs Configuration
+
+| Configuration Key | Description | Default |
+|-------------------|-------------|---------|
+| `IBM_INGESTION_KEY` | IBM Cloud Logs ingestion key | Required |
+| `IBM_HOSTNAME` | Hostname for log entries | System hostname |
+| `IBM_APP_NAME` | Application name for log entries | `flask-app` |
+| `IBM_ENV` | Environment name for log entries | `development` |
+| `IBM_IP` | IP address for log entries (optional) | `None` |
+| `IBM_MAC` | MAC address for log entries (optional) | `None` |
+| `IBM_LOG_LEVEL` | Minimum log level | `INFO` |
+| `IBM_ENVIRONMENT` | Environment where logs should be sent to IBM | `development` |
+| `IBM_URL` | IBM Cloud Logs ingestion endpoint | `https://logs.logdna.com/logs/ingest` |
+| `IBM_TIMEOUT` | HTTP request timeout in seconds | `30` |
+| `IBM_INDEX_META` | Whether metadata should be indexed/searchable | `False` |
+| `IBM_TAGS` | Comma-separated list of tags for grouping hosts | `''` |
 
 
 ## Development

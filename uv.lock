@@ -353,6 +353,9 @@ gcp = [
 graylog = [
     { name = "pygelf" },
 ]
+ibm = [
+    { name = "requests" },
+]
 test = [
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -381,9 +384,10 @@ requires-dist = [
     { name = "pytest-xdist", marker = "extra == 'test'", specifier = ">=2.0,<4.0" },
     { name = "requests", marker = "extra == 'all'", specifier = ">=2.25.0" },
     { name = "requests", marker = "extra == 'azure'", specifier = ">=2.25.0" },
+    { name = "requests", marker = "extra == 'ibm'", specifier = ">=2.25.0" },
     { name = "user-agents", specifier = ">=2.0.0" },
 ]
-provides-extras = ["graylog", "gcp", "aws", "azure", "all", "test", "dev"]
+provides-extras = ["graylog", "gcp", "aws", "azure", "ibm", "all", "test", "dev"]
 
 [[package]]
 name = "google-api-core"

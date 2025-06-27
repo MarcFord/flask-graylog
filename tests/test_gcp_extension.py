@@ -1,7 +1,7 @@
 """Tests for the GCPLogExtension class."""
 
 import logging
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from flask import Flask
@@ -26,13 +26,13 @@ class TestGCPLogExtension:
         assert extension.config == {}
         assert extension.cloud_logging_client is None
 
-    @patch('flask_network_logging.gcp_extension.cloud_logging')
+    @patch("flask_network_logging.gcp_extension.cloud_logging")
     def test_init_with_app(self, mock_cloud_logging, app):
         """Test initialization with a Flask app."""
         # Mock the Cloud Logging client
         mock_client = MagicMock()
         mock_cloud_logging.Client.return_value = mock_client
-        
+
         extension = GCPLogExtension(app=app)
 
         assert extension.app is app
@@ -44,7 +44,7 @@ class TestGCPLogExtension:
         custom_filter = Mock(spec=logging.Filter)
         custom_formatter = Mock(spec=logging.Formatter)
 
-        with patch('flask_network_logging.gcp_extension.cloud_logging'):
+        with patch("flask_network_logging.gcp_extension.cloud_logging"):
             extension = GCPLogExtension(
                 app=app,
                 get_current_user=mock_get_current_user,
@@ -61,12 +61,12 @@ class TestGCPLogExtension:
             assert extension.log_level == logging.DEBUG
             assert extension.additional_logs == ["test.logger"]
 
-    @patch('flask_network_logging.gcp_extension.cloud_logging')
+    @patch("flask_network_logging.gcp_extension.cloud_logging")
     def test_init_app_method(self, mock_cloud_logging, app):
         """Test the init_app method."""
         mock_client = MagicMock()
         mock_cloud_logging.Client.return_value = mock_client
-        
+
         extension = GCPLogExtension()
         extension.init_app(app)
 
@@ -80,12 +80,12 @@ class TestGCPLogExtension:
         with pytest.raises(RuntimeError, match="GCPLogExtension must be initialized with a Flask app"):
             extension._get_config_from_app()
 
-    @patch('flask_network_logging.gcp_extension.cloud_logging')
+    @patch("flask_network_logging.gcp_extension.cloud_logging")
     def test_get_config_from_app_with_defaults(self, mock_cloud_logging, app):
         """Test _get_config_from_app with default values."""
         mock_client = MagicMock()
         mock_cloud_logging.Client.return_value = mock_client
-        
+
         extension = GCPLogExtension(app=app)
         config = extension._get_config_from_app()
 
@@ -101,33 +101,35 @@ class TestGCPLogExtension:
 
         assert config == expected_config
 
-    @patch('flask_network_logging.gcp_extension.cloud_logging')
+    @patch("flask_network_logging.gcp_extension.cloud_logging")
     def test_get_config_from_app_with_custom_values(self, mock_cloud_logging, app):
         """Test _get_config_from_app with custom configuration values."""
-        app.config.update({
-            'GCP_PROJECT_ID': 'my-project',
-            'GCP_CREDENTIALS_PATH': '/path/to/credentials.json',
-            'GCP_LOG_NAME': 'custom-log',
-            'GCP_LOG_LEVEL': logging.DEBUG,
-            'GCP_APP_NAME': 'custom-app',
-            'GCP_SERVICE_NAME': 'custom-service',
-            'GCP_ENVIRONMENT': 'staging',
-        })
+        app.config.update(
+            {
+                "GCP_PROJECT_ID": "my-project",
+                "GCP_CREDENTIALS_PATH": "/path/to/credentials.json",
+                "GCP_LOG_NAME": "custom-log",
+                "GCP_LOG_LEVEL": logging.DEBUG,
+                "GCP_APP_NAME": "custom-app",
+                "GCP_SERVICE_NAME": "custom-service",
+                "GCP_ENVIRONMENT": "staging",
+            }
+        )
 
         mock_client = MagicMock()
         mock_cloud_logging.Client.return_value = mock_client
-        
+
         extension = GCPLogExtension(app=app)
         config = extension._get_config_from_app()
 
         expected_config = {
-            "GCP_PROJECT_ID": 'my-project',
-            "GCP_CREDENTIALS_PATH": '/path/to/credentials.json',
-            "GCP_LOG_NAME": 'custom-log',
+            "GCP_PROJECT_ID": "my-project",
+            "GCP_CREDENTIALS_PATH": "/path/to/credentials.json",
+            "GCP_LOG_NAME": "custom-log",
             "GCP_LOG_LEVEL": logging.DEBUG,
-            "GCP_APP_NAME": 'custom-app',
-            "GCP_SERVICE_NAME": 'custom-service',
-            "GCP_ENVIRONMENT": 'staging',
+            "GCP_APP_NAME": "custom-app",
+            "GCP_SERVICE_NAME": "custom-service",
+            "GCP_ENVIRONMENT": "staging",
         }
 
         assert config == expected_config
@@ -139,14 +141,14 @@ class TestGCPLogExtension:
         with pytest.raises(RuntimeError, match="GCPLogExtension must be initialized with a Flask app"):
             extension._setup_logging()
 
-    @patch('flask_network_logging.gcp_extension.CloudLoggingHandler')
-    @patch('flask_network_logging.gcp_extension.cloud_logging')
+    @patch("flask_network_logging.gcp_extension.CloudLoggingHandler")
+    @patch("flask_network_logging.gcp_extension.cloud_logging")
     def test_setup_logging_with_gcp_environment(self, mock_cloud_logging, mock_handler_class, app):
         """Test _setup_logging with GCP environment enabled."""
         # Configure app for production environment matching GCP_ENVIRONMENT
-        app.env = 'production'
-        app.config['GCP_ENVIRONMENT'] = 'production'
-        app.config['GCP_PROJECT_ID'] = 'test-project'
+        app.env = "production"
+        app.config["GCP_ENVIRONMENT"] = "production"
+        app.config["GCP_PROJECT_ID"] = "test-project"
 
         mock_client = MagicMock()
         mock_cloud_logging.Client.return_value = mock_client
@@ -158,31 +160,28 @@ class TestGCPLogExtension:
         extension._setup_logging()
 
         # Verify Cloud Logging client was created
-        mock_cloud_logging.Client.assert_called_once_with(
-            project='test-project',
-            credentials=None
-        )
+        mock_cloud_logging.Client.assert_called_once_with(project="test-project", credentials=None)
 
         # Verify handler was created with correct parameters
         mock_handler_class.assert_called_once_with(
             mock_client,
-            name='flask-app',
+            name="flask-app",
             labels={
-                'service_name': 'test_app',
-                'app_name': 'test_app', 
-                'environment': 'production',
-            }
+                "service_name": "test_app",
+                "app_name": "test_app",
+                "environment": "production",
+            },
         )
 
         # Verify handler was added to app logger
         assert mock_handler in app.logger.handlers
 
-    @patch('flask_network_logging.gcp_extension.cloud_logging')
+    @patch("flask_network_logging.gcp_extension.cloud_logging")
     def test_setup_logging_with_development_environment(self, mock_cloud_logging, app):
         """Test _setup_logging with development environment (uses StreamHandler)."""
         # Configure app for development environment
-        app.env = 'development'
-        app.config['GCP_ENVIRONMENT'] = 'production'
+        app.env = "development"
+        app.config["GCP_ENVIRONMENT"] = "production"
 
         mock_client = MagicMock()
         mock_cloud_logging.Client.return_value = mock_client
@@ -195,13 +194,13 @@ class TestGCPLogExtension:
         stream_handlers = [h for h in app.logger.handlers if isinstance(h, logging.StreamHandler)]
         assert len(stream_handlers) > 0
 
-    @patch('flask_network_logging.gcp_extension.CloudLoggingHandler')
-    @patch('flask_network_logging.gcp_extension.cloud_logging')
+    @patch("flask_network_logging.gcp_extension.CloudLoggingHandler")
+    @patch("flask_network_logging.gcp_extension.cloud_logging")
     def test_setup_logging_with_gcp_failure_fallback(self, mock_cloud_logging, mock_handler_class, app, capfd):
         """Test _setup_logging falls back to StreamHandler when GCP setup fails."""
         # Configure app for production environment
-        app.env = 'production'
-        app.config['GCP_ENVIRONMENT'] = 'production'
+        app.env = "production"
+        app.config["GCP_ENVIRONMENT"] = "production"
 
         # Make Cloud Logging client creation fail
         mock_cloud_logging.Client.side_effect = Exception("GCP authentication failed")
@@ -218,33 +217,33 @@ class TestGCPLogExtension:
         captured = capfd.readouterr()
         assert "Warning: Failed to setup Google Cloud Logging: GCP authentication failed" in captured.out
 
-    @patch('flask_network_logging.gcp_extension.cloud_logging')
+    @patch("flask_network_logging.gcp_extension.cloud_logging")
     def test_setup_logging_with_context_filter(self, mock_cloud_logging, app):
         """Test _setup_logging with context filter."""
         mock_client = MagicMock()
         mock_cloud_logging.Client.return_value = mock_client
 
         mock_filter = Mock(spec=logging.Filter)
-        
+
         extension = GCPLogExtension(app=app, context_filter=mock_filter)
         extension._setup_logging()
 
         # Find the added handler
-        added_handlers = [h for h in app.logger.handlers if hasattr(h, 'filters')]
+        added_handlers = [h for h in app.logger.handlers if hasattr(h, "filters")]
         assert len(added_handlers) > 0
-        
+
         # Check that the filter was added to at least one handler
         filter_added = any(mock_filter in handler.filters for handler in added_handlers)
         assert filter_added
 
-    @patch('flask_network_logging.gcp_extension.cloud_logging')
+    @patch("flask_network_logging.gcp_extension.cloud_logging")
     def test_setup_logging_with_additional_logs(self, mock_cloud_logging, app):
         """Test _setup_logging with additional loggers."""
         mock_client = MagicMock()
         mock_cloud_logging.Client.return_value = mock_client
 
         additional_logs = ["test.logger1", "test.logger2"]
-        
+
         extension = GCPLogExtension(app=app, additional_logs=additional_logs)
         extension._setup_logging()
 
@@ -254,7 +253,7 @@ class TestGCPLogExtension:
             assert logger.level == extension.log_level
             assert len(logger.handlers) > 0
 
-    @patch('flask_network_logging.gcp_extension.cloud_logging')
+    @patch("flask_network_logging.gcp_extension.cloud_logging")
     def test_context_filter_creation(self, mock_cloud_logging, app):
         """Test that GraylogContextFilter is created by default."""
         mock_client = MagicMock()
@@ -265,7 +264,7 @@ class TestGCPLogExtension:
         assert extension.context_filter is not None
         assert isinstance(extension.context_filter, GraylogContextFilter)
 
-    @patch('flask_network_logging.gcp_extension.cloud_logging')
+    @patch("flask_network_logging.gcp_extension.cloud_logging")
     def test_log_formatter_creation(self, mock_cloud_logging, app):
         """Test that log formatter is created by default."""
         mock_client = MagicMock()
@@ -276,11 +275,11 @@ class TestGCPLogExtension:
         assert extension.log_formatter is not None
         assert isinstance(extension.log_formatter, logging.Formatter)
 
-    @patch('flask_network_logging.gcp_extension.cloud_logging')
+    @patch("flask_network_logging.gcp_extension.cloud_logging")
     def test_log_level_parameter_override(self, mock_cloud_logging, app):
         """Test that log_level parameter overrides config."""
-        app.config['GCP_LOG_LEVEL'] = logging.ERROR
-        
+        app.config["GCP_LOG_LEVEL"] = logging.ERROR
+
         mock_client = MagicMock()
         mock_cloud_logging.Client.return_value = mock_client
 
@@ -303,5 +302,5 @@ def mock_get_current_user():
 def app():
     """Create a Flask app for testing."""
     app = Flask("test_app")
-    app.config['TESTING'] = True
+    app.config["TESTING"] = True
     return app

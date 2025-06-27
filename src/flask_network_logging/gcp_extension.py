@@ -1,5 +1,5 @@
-import logging
 import json
+import logging
 from typing import Any, Callable, Optional
 
 from flask import Flask
@@ -121,7 +121,7 @@ class GCPLogExtension:
         # Prevent duplicate setup
         if self._logging_setup:
             return
-        
+
         self._logging_setup = True
 
         if str(self.app.env).lower() == self.config.get("GCP_ENVIRONMENT", "production").lower():
@@ -130,14 +130,14 @@ class GCPLogExtension:
                     "google-cloud-logging is required for Google Cloud Logging support. "
                     "Install it with: pip install flask-network-logging[gcp]"
                 )
-                
+
             try:
                 # Initialize Cloud Logging client
                 self.cloud_logging_client = cloud_logging.Client(
                     project=self.config.get("GCP_PROJECT_ID"),
-                    credentials=None if not self.config.get("GCP_CREDENTIALS_PATH") else None
+                    credentials=None if not self.config.get("GCP_CREDENTIALS_PATH") else None,
                 )
-                
+
                 # Create Cloud Logging handler
                 log_handler = CloudLoggingHandler(
                     self.cloud_logging_client,
@@ -146,7 +146,7 @@ class GCPLogExtension:
                         "service_name": self.config["GCP_SERVICE_NAME"],
                         "app_name": self.config["GCP_APP_NAME"],
                         "environment": self.config["GCP_ENVIRONMENT"],
-                    }
+                    },
                 )
             except Exception as e:
                 # Fallback to stream handler if GCP setup fails

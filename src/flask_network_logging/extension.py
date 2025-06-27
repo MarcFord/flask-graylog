@@ -117,7 +117,7 @@ class GraylogExtension:
         # Prevent duplicate setup
         if self._logging_setup:
             return
-        
+
         self._logging_setup = True
 
         if str(self.app.env).lower() == self.app.config.get("GRAYLOG_ENVIRONMENT", "production").lower():
@@ -126,7 +126,7 @@ class GraylogExtension:
                     "pygelf is required for Graylog support. "
                     "Install it with: pip install flask-network-logging[graylog]"
                 )
-            
+
             log_handler = GelfTcpHandler(
                 host=self.config["GRAYLOG_HOST"],
                 port=self.config["GRAYLOG_PORT"],

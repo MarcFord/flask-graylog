@@ -43,7 +43,7 @@ class GraylogContextFilter(logging.Filter):
     specified in the configuration to the log records. It's designed to work
     with multiple remote logging backends including Graylog, Google Cloud Logging,
     AWS CloudWatch Logs, and other structured logging systems.
-    
+
     Note: Despite the name 'Graylog', this filter is used by all logging extensions
     in the flask-network-logging package. The name is kept for backward compatibility.
     Use the aliases FNLContextFilter or FlaskNetworkLoggingContextFilter for clearer naming.

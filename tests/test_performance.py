@@ -224,11 +224,13 @@ class TestPerformanceAndEdgeCases:
         app = Flask(__name__)
         # Clear all config to simulate missing configuration but keep essential Flask config
         app.config.clear()
-        app.config.update({
-            "ENV": "production",
-            "DEBUG": False,
-            "TESTING": False,
-        })
+        app.config.update(
+            {
+                "ENV": "production",
+                "DEBUG": False,
+                "TESTING": False,
+            }
+        )
 
         extension = GraylogExtension(app=app)
         config = extension._get_config_from_app()

@@ -23,13 +23,13 @@ except (PackageNotFoundError, Exception):  # pylint: disable=broad-exception-cau
     # Fallback for development mode or package not installed
     __version__ = "0.0.1-dev"
 
-from .context_filter import GraylogContextFilter, FlaskNetworkLoggingContextFilter, FNLContextFilter
+from .aws_extension import AWSLogExtension
+from .azure_extension import AzureLogExtension
+from .context_filter import FlaskNetworkLoggingContextFilter, FNLContextFilter, GraylogContextFilter
 
 # Import main classes for easy access
 from .extension import GraylogExtension
 from .gcp_extension import GCPLogExtension
-from .aws_extension import AWSLogExtension
-from .azure_extension import AzureLogExtension
 from .ibm_extension import IBMLogExtension
 from .oci_extension import OCILogExtension
 
@@ -42,8 +42,20 @@ IBMLog = IBMLogExtension
 OCILog = OCILogExtension
 
 __all__ = [
-    "GraylogExtension", "GCPLogExtension", "AWSLogExtension", "AzureLogExtension", "IBMLogExtension", "OCILogExtension",
-    "Graylog", "GCPLog", "AWSLog", "AzureLog", "IBMLog", "OCILog",
-    "GraylogContextFilter", "FlaskNetworkLoggingContextFilter", "FNLContextFilter",  # Last two are aliases
-    "__version__"
+    "GraylogExtension",
+    "GCPLogExtension",
+    "AWSLogExtension",
+    "AzureLogExtension",
+    "IBMLogExtension",
+    "OCILogExtension",
+    "Graylog",
+    "GCPLog",
+    "AWSLog",
+    "AzureLog",
+    "IBMLog",
+    "OCILog",
+    "GraylogContextFilter",
+    "FlaskNetworkLoggingContextFilter",
+    "FNLContextFilter",  # Last two are aliases
+    "__version__",
 ]

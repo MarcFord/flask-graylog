@@ -26,7 +26,7 @@ jobs:
       run: uv sync --all-extras
 
     - name: Run security audit with bandit
-      run: uv tool run bandit -r src/flask_graylog/ -f json -o bandit-report.json
+      run: uv tool run bandit -r src/flask_remote_logging/ -f json -o bandit-report.json
 
     - name: Run dependency vulnerability check
       run: |

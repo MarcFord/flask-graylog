@@ -20,7 +20,7 @@ jobs:
     needs: test
     environment: 
       name: pypi
-      url: https://pypi.org/p/flask-graylog
+      url: https://pypi.org/p/flask-remote-logging
     
     steps:
     - uses: actions/checkout@v4

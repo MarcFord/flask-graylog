@@ -14,7 +14,7 @@ import time
 import hashlib
 import hmac
 import base64
-from datetime import datetime
+from datetime import datetime, timezone
 
 try:
     import requests
@@ -277,7 +277,7 @@ class AzureMonitorHandler(logging.Handler):
             
             # Prepare log data
             log_data = {
-                'timestamp': datetime.utcfromtimestamp(record.created).isoformat() + 'Z',
+                'timestamp': datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat().replace('+00:00', 'Z'),
                 'level': record.levelname,
                 'logger': record.name,
                 'message': message,
@@ -319,7 +319,7 @@ class AzureMonitorHandler(logging.Handler):
             json_data = json.dumps(log_data)
             
             # Build the signature
-            date_string = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+            date_string = datetime.now(timezone.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')
             content_length = len(json_data)
             
             string_to_hash = f"POST\n{content_length}\napplication/json\nx-ms-date:{date_string}\n{self.resource}"

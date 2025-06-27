@@ -356,5 +356,3 @@ class FlaskRemoteLoggingContextFilter(logging.Filter):
         for param, value in params_dict.items():
             filtered_dict[param] = "*" * len(str(value)) if param in self.FILTER_FIELDS else value
         return filtered_dict
-
-

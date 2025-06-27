@@ -26,23 +26,41 @@ classifiers = [
     "Topic :: Communications",
 ]
 dependencies = [
-    "pygelf>=0.4.2",
     "Flask>=1.1.4,<2.0.0",
     "user-agents>=2.0.0",
     "MarkupSafe<2.1.0",
+]
+
+[project.optional-dependencies]
+# Graylog support
+graylog = [
+    "pygelf>=0.4.2",
+]
+
+# Google Cloud Logging support
+gcp = [
     "google-cloud-logging>=3.0.0",
+]
+
+# AWS CloudWatch Logs support
+aws = [
+    "boto3>=1.26.0",
+]
+
+# Azure Monitor Logs support
+azure = [
+    "requests>=2.25.0",
+]
+
+# Install all backends
+all = [
+    "pygelf>=0.4.2",
+    "google-cloud-logging>=3.0.0", 
     "boto3>=1.26.0",
     "requests>=2.25.0",
 ]
 
-[project.urls]
-"Homepage" = "https://github.com/MarcFord/flask-network-logging"
-"Bug Reports" = "https://github.com/MarcFord/flask-network-logging/issues"
-"Source" = "https://github.com/MarcFord/flask-network-logging"
-"Documentation" = "https://github.com/MarcFord/flask-network-logging#readme"
-"Changelog" = "https://github.com/MarcFord/flask-network-logging/blob/main/CHANGELOG.md"
-
-[project.optional-dependencies]
+# Development and testing dependencies
 test = [
     "pytest>=6.0",
     "pytest-cov>=2.10,<6.0",
@@ -56,6 +74,13 @@ dev = [
     "flake8>=4.0",
     "pre-commit>=2.20.0",
 ]
+
+[project.urls]
+"Homepage" = "https://github.com/MarcFord/flask-network-logging"
+"Bug Reports" = "https://github.com/MarcFord/flask-network-logging/issues"
+"Source" = "https://github.com/MarcFord/flask-network-logging"
+"Documentation" = "https://github.com/MarcFord/flask-network-logging#readme"
+"Changelog" = "https://github.com/MarcFord/flask-network-logging/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["setuptools>=45.0", "wheel", "setuptools_scm[toml]>=6.2"]

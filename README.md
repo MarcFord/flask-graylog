@@ -25,9 +25,59 @@ A Flask extension for sending application logs to remote logging services includ
 
 ## Installation
 
+### Basic Installation
+
+Install the core package without any logging backend dependencies:
+
 ```bash
 pip install flask-network-logging
 ```
+
+### Backend-Specific Installation
+
+Install only the dependencies you need for your specific logging backend:
+
+**For Graylog support:**
+```bash
+pip install flask-network-logging[graylog]
+```
+
+**For Google Cloud Logging support:**
+```bash
+pip install flask-network-logging[gcp]
+```
+
+**For AWS CloudWatch Logs support:**
+```bash
+pip install flask-network-logging[aws]
+```
+
+**For Azure Monitor Logs support:**
+```bash
+pip install flask-network-logging[azure]
+```
+
+**For multiple backends:**
+```bash
+# Install specific backends
+pip install flask-network-logging[graylog,aws]
+
+# Or install all backends
+pip install flask-network-logging[all]
+```
+
+### Why Optional Dependencies?
+
+The optional dependencies approach provides several benefits:
+
+- **📦 Smaller footprint**: Install only the dependencies you actually need
+- **🚀 Faster installation**: Reduced package download and installation time
+- **🐳 Smaller Docker images**: Especially important for containerized applications
+- **🔒 Reduced security surface**: Fewer dependencies mean fewer potential vulnerabilities
+- **📊 Better dependency management**: Avoid conflicts with unused logging backends
+- **💰 Lower resource usage**: Particularly beneficial in serverless environments
+
+The core package includes only Flask and essential utilities. Backend-specific dependencies (like `boto3`, `google-cloud-logging`, `pygelf`, `requests`) are installed only when you explicitly request them.
 
 ## Quick Start
 

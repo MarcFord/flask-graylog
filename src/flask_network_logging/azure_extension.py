@@ -133,7 +133,10 @@ class AzureLogExtension:
     def _init_azure_config(self):
         """Initialize Azure Monitor configuration."""
         if not requests:
-            raise ImportError("requests library is required for Azure Monitor Logs integration")
+            raise ImportError(
+                "requests is required for Azure Monitor Logs support. "
+                "Install it with: pip install flask-network-logging[azure]"
+            )
             
         self.workspace_id = self.config.get('AZURE_WORKSPACE_ID')
         self.workspace_key = self.config.get('AZURE_WORKSPACE_KEY')

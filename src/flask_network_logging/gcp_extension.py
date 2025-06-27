@@ -3,8 +3,13 @@ import json
 from typing import Any, Callable, Optional
 
 from flask import Flask
-from google.cloud import logging as cloud_logging
-from google.cloud.logging_v2.handlers import CloudLoggingHandler
+
+try:
+    from google.cloud import logging as cloud_logging
+    from google.cloud.logging_v2.handlers import CloudLoggingHandler
+except ImportError:
+    cloud_logging = None
+    CloudLoggingHandler = None
 
 from .context_filter import GraylogContextFilter
 
@@ -120,6 +125,12 @@ class GCPLogExtension:
         self._logging_setup = True
 
         if str(self.app.env).lower() == self.config.get("GCP_ENVIRONMENT", "production").lower():
+            if cloud_logging is None or CloudLoggingHandler is None:
+                raise ImportError(
+                    "google-cloud-logging is required for Google Cloud Logging support. "
+                    "Install it with: pip install flask-network-logging[gcp]"
+                )
+                
             try:
                 # Initialize Cloud Logging client
                 self.cloud_logging_client = cloud_logging.Client(

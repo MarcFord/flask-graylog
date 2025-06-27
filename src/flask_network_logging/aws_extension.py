@@ -134,7 +134,10 @@ class AWSLogExtension:
     def _init_cloudwatch_client(self):
         """Initialize the AWS CloudWatch Logs client."""
         if not boto3:
-            raise ImportError("boto3 is required for AWS CloudWatch Logs integration")
+            raise ImportError(
+                "boto3 is required for AWS CloudWatch Logs support. "
+                "Install it with: pip install flask-network-logging[aws]"
+            )
             
         try:
             # Create CloudWatch Logs client

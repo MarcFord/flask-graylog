@@ -2,7 +2,11 @@ import logging
 from typing import Any, Callable, Optional
 
 from flask import Flask
-from pygelf import GelfTcpHandler
+
+try:
+    from pygelf import GelfTcpHandler
+except ImportError:
+    GelfTcpHandler = None
 
 from .context_filter import GraylogContextFilter
 
@@ -117,6 +121,12 @@ class GraylogExtension:
         self._logging_setup = True
 
         if str(self.app.env).lower() == self.app.config.get("GRAYLOG_ENVIRONMENT", "production").lower():
+            if GelfTcpHandler is None:
+                raise ImportError(
+                    "pygelf is required for Graylog support. "
+                    "Install it with: pip install flask-network-logging[graylog]"
+                )
+            
             log_handler = GelfTcpHandler(
                 host=self.config["GRAYLOG_HOST"],
                 port=self.config["GRAYLOG_PORT"],

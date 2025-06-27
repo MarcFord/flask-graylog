@@ -52,6 +52,9 @@ class AWSLogExtension:
         
         aws_log = AWSLogExtension(app)
         aws_log._setup_logging()
+        
+        # The extension uses a reusable context filter that works
+        # with all flask-network-logging backends (Graylog, GCP, AWS)
         ```
     """
 

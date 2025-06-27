@@ -22,7 +22,7 @@ except (PackageNotFoundError, Exception):  # pylint: disable=broad-exception-cau
     # Fallback for development mode or package not installed
     __version__ = "0.0.1-dev"
 
-from .context_filter import GraylogContextFilter
+from .context_filter import GraylogContextFilter, FlaskNetworkLoggingContextFilter, FNLContextFilter
 
 # Import main classes for easy access
 from .extension import GraylogExtension
@@ -34,4 +34,9 @@ Graylog = GraylogExtension
 GCPLog = GCPLogExtension
 AWSLog = AWSLogExtension
 
-__all__ = ["GraylogExtension", "GCPLogExtension", "AWSLogExtension", "Graylog", "GCPLog", "AWSLog", "GraylogContextFilter", "__version__"]
+__all__ = [
+    "GraylogExtension", "GCPLogExtension", "AWSLogExtension", 
+    "Graylog", "GCPLog", "AWSLog", 
+    "GraylogContextFilter", "FlaskNetworkLoggingContextFilter", "FNLContextFilter",  # Last two are aliases
+    "__version__"
+]

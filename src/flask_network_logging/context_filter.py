@@ -4,7 +4,8 @@ flask_network_logging.context_filter
 
 This module provides a logging filter for Flask applications that enriches log records
 with contextual information from the current request and environment. The filter is
-designed to facilitate structured logging for Graylog or similar log aggregation systems.
+designed to facilitate structured logging for remote logging systems like Graylog,
+Google Cloud Logging, AWS CloudWatch Logs, and similar log aggregation platforms.
 
 Features:
     - Adds request-specific data such as request ID, client IP, user agent, URL, and HTTP method.
@@ -15,9 +16,11 @@ Features:
 
 Classes:
     - GraylogContextFilter: A logging.Filter subclass that injects contextual data into log records.
+    - FlaskNetworkLoggingContextFilter: Alias for GraylogContextFilter (verbose name).
+    - FNLContextFilter: Alias for GraylogContextFilter (short name).
 
 Intended Usage:
-    Attach GraylogContextFilter to Flask app loggers to automatically include rich context
+    Attach GraylogContextFilter (or one of its aliases) to Flask app loggers to automatically include rich context
     in all log messages, improving traceability and debugging in distributed environments.
 
 """
@@ -37,7 +40,13 @@ class GraylogContextFilter(logging.Filter):
     A logging filter that adds context information to log records.
 
     This filter adds the Flask request context and any additional fields
-    specified in the configuration to the log records.
+    specified in the configuration to the log records. It's designed to work
+    with multiple remote logging backends including Graylog, Google Cloud Logging,
+    AWS CloudWatch Logs, and other structured logging systems.
+    
+    Note: Despite the name 'Graylog', this filter is used by all logging extensions
+    in the flask-network-logging package. The name is kept for backward compatibility.
+    Use the aliases FNLContextFilter or FlaskNetworkLoggingContextFilter for clearer naming.
     """
 
     FILTER_FIELDS = (
@@ -349,3 +358,8 @@ class GraylogContextFilter(logging.Filter):
         for param, value in params_dict.items():
             filtered_dict[param] = "*" * len(str(value)) if param in self.FILTER_FIELDS else value
         return filtered_dict
+
+
+# Convenient aliases for the context filter
+FlaskNetworkLoggingContextFilter = GraylogContextFilter
+FNLContextFilter = GraylogContextFilter

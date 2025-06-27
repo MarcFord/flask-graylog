@@ -158,10 +158,9 @@ class TestAWSLogExtension:
 
         app.config.update({"AWS_ENVIRONMENT": "development"})
 
-        extension = AWSLogExtension(app=app)
-
         with patch.object(app.logger, "info") as mock_info:
-            extension._setup_logging()
+            extension = AWSLogExtension(app=app)
+            # The setup happens automatically during init, so check for the expected call
             mock_info.assert_called_with("AWS CloudWatch Logs: Skipping setup in development environment")
 
     @patch("flask_network_logging.aws_extension.boto3")
@@ -269,6 +268,9 @@ class TestAWSLogExtension:
         app.config.update({"AWS_LOG_GROUP": "/aws/lambda/test", "AWS_LOG_STREAM": "test-stream"})
 
         extension = AWSLogExtension(app=app)
+        
+        # Reset mock to only track calls made after automatic setup
+        mock_client.describe_log_streams.reset_mock()
         extension._ensure_log_stream_exists()
 
         mock_client.describe_log_streams.assert_called_once_with(
@@ -303,38 +305,33 @@ class TestAWSLogExtension:
 
         app.config.update({"AWS_ENVIRONMENT": "production", "AWS_LOG_GROUP": "/aws/lambda/test"})
 
-        extension = AWSLogExtension(app=app, additional_logs=["test.logger", "another.logger"])
-
         with patch("logging.getLogger") as mock_get_logger:
             mock_logger = Mock()
             mock_get_logger.return_value = mock_logger
 
-            extension._setup_logging()
+            # The setup happens automatically during init
+            extension = AWSLogExtension(app=app, additional_logs=["test.logger", "another.logger"])
 
-            # Should have called getLogger for each additional logger
+            # Should have called getLogger for each additional logger during automatic setup
             assert mock_get_logger.call_count == 2
 
     def test_context_filter_creation(self, app, mock_get_current_user):
         """Test that context filter is created correctly."""
         with patch("flask_network_logging.aws_extension.boto3"):
+            # AWS extension should create default context filter if none provided
             extension = AWSLogExtension(app=app, get_current_user=mock_get_current_user)
 
-            app.config.update({"AWS_ENVIRONMENT": "production", "AWS_LOG_GROUP": "/aws/lambda/test"})
-
-            extension._setup_logging()
-
+            # The AWS extension should create a default context filter during init
             assert extension.context_filter is not None
             assert isinstance(extension.context_filter, GraylogContextFilter)
 
     def test_log_formatter_creation(self, app):
         """Test that log formatter is created correctly."""
         with patch("flask_network_logging.aws_extension.boto3"):
+            # AWS extension should create default log formatter if none provided
             extension = AWSLogExtension(app=app)
 
-            app.config.update({"AWS_ENVIRONMENT": "production", "AWS_LOG_GROUP": "/aws/lambda/test"})
-
-            extension._setup_logging()
-
+            # The AWS extension should create a default log formatter during init
             assert extension.log_formatter is not None
             assert isinstance(extension.log_formatter, logging.Formatter)
 
@@ -345,11 +342,9 @@ class TestAWSLogExtension:
                 {"AWS_LOG_LEVEL": "INFO", "AWS_ENVIRONMENT": "production", "AWS_LOG_GROUP": "/aws/lambda/test"}
             )
 
-            extension = AWSLogExtension(app=app, log_level=logging.DEBUG)
-
-            with patch.object(extension, "_configure_logger") as mock_configure:
-                extension._setup_logging()
-                # Should use the parameter value, not config
+            with patch.object(AWSLogExtension, "_configure_logger") as mock_configure:
+                extension = AWSLogExtension(app=app, log_level=logging.DEBUG)
+                # Setup happens automatically during init, should use the parameter value, not config
                 mock_configure.assert_called_with(app.logger, logging.DEBUG)
 
 

@@ -19,6 +19,7 @@ except ImportError:
     NoCredentialsError = Exception
 
 from .context_filter import GraylogContextFilter
+from .middleware import setup_middleware
 
 
 class AWSLogExtension:
@@ -66,6 +67,7 @@ class AWSLogExtension:
         additional_logs: Optional[List[str]] = None,
         context_filter: Optional[logging.Filter] = None,
         log_formatter: Optional[logging.Formatter] = None,
+        enable_middleware: bool = True,
     ):
         """
         Initialize the AWS CloudWatch Logs extension.
@@ -77,6 +79,7 @@ class AWSLogExtension:
             additional_logs: List of additional logger names to configure
             context_filter: Custom logging filter (if None, GraylogContextFilter is used)
             log_formatter: Custom log formatter
+            enable_middleware: Whether to enable request/response middleware (default: True)
         """
         self.app = app
         self.get_current_user = get_current_user
@@ -84,10 +87,12 @@ class AWSLogExtension:
         self.additional_logs = additional_logs or []
         self.context_filter = context_filter
         self.log_formatter = log_formatter
+        self.enable_middleware = enable_middleware
         self.config: dict[str, Any] = {}
         self.cloudwatch_client = None
         self.log_group = None
         self.log_stream = None
+        self._logging_setup: bool = False
 
         if app is not None:
             self.init_app(app)
@@ -102,12 +107,27 @@ class AWSLogExtension:
         self.app = app
         self.config = self._get_config_from_app()
 
+        # Create default context filter if none provided
+        if not self.context_filter:
+            self.context_filter = GraylogContextFilter(get_current_user=self.get_current_user)
+
+        # Create default log formatter if none provided
+        if not self.log_formatter:
+            self.log_formatter = logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(hostname)s: %(message)s "
+                "[in %(pathname)s:%(lineno)d]"
+                "params: %(get_params)s"
+            )
+
         # Initialize AWS CloudWatch client if boto3 is available
         if boto3:
             try:
                 self._init_cloudwatch_client()
             except Exception as e:
                 app.logger.warning(f"Failed to initialize AWS CloudWatch client: {e}")
+
+        # Set up logging automatically
+        self._setup_logging()
 
     def _get_config_from_app(self) -> Dict[str, Any]:
         """
@@ -211,6 +231,12 @@ class AWSLogExtension:
         if not self.app:
             return
 
+        # Prevent duplicate setup
+        if self._logging_setup:
+            return
+
+        self._logging_setup = True
+
         # Re-read config in case it was updated after initialization
         self.config = self._get_config_from_app()
 
@@ -238,6 +264,10 @@ class AWSLogExtension:
         for logger_name in self.additional_logs:
             logger = logging.getLogger(logger_name)
             self._configure_logger(logger, self.log_level)
+
+        # Set up middleware if enabled
+        if self.enable_middleware:
+            setup_middleware(self.app)
 
         self.app.logger.info("AWS CloudWatch Logs extension initialized successfully")
 

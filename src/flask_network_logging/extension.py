@@ -9,6 +9,7 @@ except ImportError:
     GelfTcpHandler = None
 
 from .context_filter import GraylogContextFilter
+from .middleware import setup_middleware
 
 
 class GraylogExtension:
@@ -27,6 +28,7 @@ class GraylogExtension:
         log_formatter: Optional[logging.Formatter] = None,
         log_level: int = logging.INFO,
         additional_logs: Optional[list[str]] = None,
+        enable_middleware: bool = True,
     ):
         self.context_filter: Optional[logging.Filter] = context_filter
         self.log_formatter: Optional[logging.Formatter] = log_formatter
@@ -36,6 +38,7 @@ class GraylogExtension:
         self.get_current_user: Optional[Callable] = get_current_user
         self.config: dict[str, Any] = {}
         self._logging_setup: bool = False
+        self.enable_middleware: bool = enable_middleware
 
         if app is not None:
             self.init_app(
@@ -45,6 +48,7 @@ class GraylogExtension:
                 log_formatter=log_formatter,
                 log_level=log_level,
                 additional_logs=additional_logs,
+                enable_middleware=enable_middleware,
             )
 
     def init_app(
@@ -55,6 +59,7 @@ class GraylogExtension:
         log_formatter: Optional[logging.Formatter] = None,
         log_level: int = logging.INFO,
         additional_logs: Optional[list[str]] = None,
+        enable_middleware: bool = True,
     ) -> None:
         """
         Initialize the extension with the given Flask application.
@@ -71,6 +76,7 @@ class GraylogExtension:
             self.log_level = log_level
         if log_formatter:
             self.log_formatter = log_formatter
+        self.enable_middleware = enable_middleware
 
         # Additional initialization logic can be added here.
         self.config = self._get_config_from_app()
@@ -78,6 +84,9 @@ class GraylogExtension:
             self.context_filter = GraylogContextFilter(get_current_user=get_current_user or self.get_current_user)
         elif context_filter:
             self.context_filter = context_filter
+
+        if self.config.get("FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE") is not None:
+            self.enable_middleware = self.config.get("FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE", enable_middleware)
 
         if not log_formatter and not self.log_formatter:
             self.log_formatter = logging.Formatter(
@@ -93,6 +102,9 @@ class GraylogExtension:
             self.log_level = log_level
         else:
             self.log_level = self.config.get("GRAYLOG_LOG_LEVEL", self.log_level)
+
+        # Set up logging automatically
+        self._setup_logging()
 
     def _setup_logging(self) -> None:
         """
@@ -157,6 +169,9 @@ class GraylogExtension:
                 if self.context_filter:
                     additional_logger.addFilter(self.context_filter)
 
+        if self.enable_middleware:
+            setup_middleware(self.app)
+
     def _get_config_from_app(self) -> dict[str, Any]:
         """
         Retrieve configuration settings from the Flask application.
@@ -177,4 +192,5 @@ class GraylogExtension:
             "GRAYLOG_ENVIRONMENT": self.app.config.get("GRAYLOG_ENVIRONMENT", "production"),
             "GRAYLOG_EXTRA_FIELDS": self.app.config.get("GRAYLOG_EXTRA_FIELDS", True),
             "GRAYLOG_DEBUG": self.app.config.get("GRAYLOG_DEBUG", True),
+            "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get("FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE", None),
         }

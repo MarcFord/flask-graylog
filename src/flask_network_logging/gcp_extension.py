@@ -11,6 +11,7 @@ except ImportError:
     CloudLoggingHandler = None
 
 from .context_filter import GraylogContextFilter
+from .middleware import setup_middleware
 
 
 class GCPLogExtension:
@@ -29,6 +30,7 @@ class GCPLogExtension:
         log_formatter: Optional[logging.Formatter] = None,
         log_level: int = logging.INFO,
         additional_logs: Optional[list[str]] = None,
+        enable_middleware: bool = True,
     ):
         self.context_filter: Optional[logging.Filter] = context_filter
         self.log_formatter: Optional[logging.Formatter] = log_formatter
@@ -36,6 +38,7 @@ class GCPLogExtension:
         self.additional_logs: Optional[list[str]] = additional_logs
         self.app: Optional[Flask] = None
         self.get_current_user: Optional[Callable] = get_current_user
+        self.enable_middleware: bool = enable_middleware
         self.config: dict[str, Any] = {}
         self.cloud_logging_client: Optional[cloud_logging.Client] = None
         self._logging_setup: bool = False
@@ -58,6 +61,7 @@ class GCPLogExtension:
         log_formatter: Optional[logging.Formatter] = None,
         log_level: int = logging.INFO,
         additional_logs: Optional[list[str]] = None,
+        enable_middleware: bool = True,
     ) -> None:
         """
         Initialize the extension with the given Flask application.
@@ -74,6 +78,7 @@ class GCPLogExtension:
             self.log_level = log_level
         if log_formatter:
             self.log_formatter = log_formatter
+        self.enable_middleware = enable_middleware
 
         # Additional initialization logic can be added here.
         self.config = self._get_config_from_app()
@@ -96,6 +101,9 @@ class GCPLogExtension:
             self.log_level = log_level
         else:
             self.log_level = self.config.get("GCP_LOG_LEVEL", self.log_level)
+
+        # Set up logging and middleware
+        self._setup_logging()
 
     def _setup_logging(self) -> None:
         """
@@ -172,6 +180,10 @@ class GCPLogExtension:
                 additional_logger.addHandler(log_handler)
                 if self.context_filter:
                     additional_logger.addFilter(self.context_filter)
+
+        # Set up middleware if enabled
+        if self.enable_middleware:
+            setup_middleware(self.app)
 
     def _get_config_from_app(self) -> dict[str, Any]:
         """

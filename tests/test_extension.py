@@ -145,13 +145,10 @@ class TestGraylogExtension:
         """Test logging setup when environment doesn't match Graylog environment."""
         app.env = "development"  # Different from 'test' in config
 
-        extension = GraylogExtension(app=app)
-
-        # Mock the logger
+        # Mock the logger before creating the extension
         with patch.object(app, "logger", mock_logger):
-            extension._setup_logging()
-
-            # Should have called addHandler
+            extension = GraylogExtension(app=app)
+            # Setup happens automatically during init
             mock_logger.addHandler.assert_called()
 
     def test_setup_logging_without_app(self):
@@ -165,8 +162,6 @@ class TestGraylogExtension:
         """Test logging setup with additional loggers."""
         app.env = "development"
         additional_logs = ["test.logger1", "test.logger2"]
-
-        extension = GraylogExtension(app=app, additional_logs=additional_logs)
 
         with patch.object(app, "logger", mock_logger), patch("logging.getLogger") as mock_get_logger:
             # Create mock loggers for additional loggers
@@ -185,7 +180,8 @@ class TestGraylogExtension:
 
             mock_get_logger.side_effect = get_logger_side_effect
 
-            extension._setup_logging()
+            # Setup happens automatically during init
+            extension = GraylogExtension(app=app, additional_logs=additional_logs)
 
             # Verify additional loggers were configured
             mock_get_logger.assert_any_call("test.logger1")
@@ -200,10 +196,12 @@ class TestGraylogExtension:
 
     def test_setup_logging_without_context_filter(self, app, mock_logger):
         """Test logging setup without context filter."""
-        extension = GraylogExtension(app=app)
-        extension.context_filter = None
-
         with patch.object(app, "logger", mock_logger):
+            extension = GraylogExtension(app=app)
+            extension.context_filter = None
+
+            # Reset setup flag to allow manual setup test
+            extension._logging_setup = False
             extension._setup_logging()
 
             # Should still add handler without filter
@@ -211,12 +209,10 @@ class TestGraylogExtension:
 
     def test_integration_with_flask_logging(self, app, client, mock_logger):
         """Test integration with Flask application logging."""
-        extension = GraylogExtension(app=app)
-
         with patch.object(app, "logger", mock_logger):
-            extension._setup_logging()
+            extension = GraylogExtension(app=app)
 
-            # Should have called addHandler
+            # Should have called addHandler during automatic setup
             mock_logger.addHandler.assert_called()
 
     def test_log_level_from_config(self, app):

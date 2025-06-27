@@ -23,6 +23,7 @@ except ImportError:
     ConfigFileNotFound = Exception
 
 from .context_filter import GraylogContextFilter
+from .middleware import setup_middleware
 
 
 class OCILogExtension:
@@ -70,6 +71,7 @@ class OCILogExtension:
         additional_logs: Optional[List[str]] = None,
         context_filter: Optional[logging.Filter] = None,
         log_formatter: Optional[logging.Formatter] = None,
+        enable_middleware: bool = True,
     ):
         """
         Initialize the OCI Logging extension.
@@ -81,6 +83,7 @@ class OCILogExtension:
             additional_logs: List of additional logger names to configure
             context_filter: Custom logging filter (if None, GraylogContextFilter is used)
             log_formatter: Custom log formatter
+            enable_middleware: Whether to enable request/response middleware (default: True)
         """
         self.app = app
         self.get_current_user = get_current_user
@@ -88,8 +91,10 @@ class OCILogExtension:
         self.additional_logs = additional_logs or []
         self.context_filter = context_filter
         self.log_formatter = log_formatter
+        self.enable_middleware = enable_middleware
         self.config: dict[str, Any] = {}
         self.logging_client = None
+        self._logging_setup: bool = False
 
         if app is not None:
             self.init_app(app)
@@ -109,6 +114,9 @@ class OCILogExtension:
             self._init_oci_config()
         except Exception as e:
             app.logger.warning(f"Failed to initialize OCI Logging client: {e}")
+
+        # Set up logging and middleware
+        self._setup_logging()
 
     def _get_config_from_app(self) -> Dict[str, Any]:
         """
@@ -174,6 +182,11 @@ class OCILogExtension:
         if not self.app:
             return
 
+        # Prevent duplicate setup
+        if self._logging_setup:
+            return
+        self._logging_setup = True
+
         # Re-read config in case it was updated after initialization
         self.config = self._get_config_from_app()
 
@@ -201,6 +214,10 @@ class OCILogExtension:
         for logger_name in self.additional_logs:
             logger = logging.getLogger(logger_name)
             self._configure_logger(logger, self.log_level)
+
+        # Set up middleware if enabled
+        if self.enable_middleware:
+            setup_middleware(self.app)
 
         self.app.logger.info("OCI Logging extension initialized successfully")
 

@@ -85,10 +85,9 @@ class TestIBMLogExtension:
     @patch("flask_network_logging.ibm_extension.requests")
     def test_setup_logging(self, mock_requests):
         """Test logging setup."""
-        extension = IBMLogExtension(self.app)
-
-        with patch.object(extension, "_configure_logger") as mock_configure:
-            extension._setup_logging()
+        with patch.object(IBMLogExtension, "_configure_logger") as mock_configure:
+            extension = IBMLogExtension(self.app)
+            # Setup happens automatically during init
             mock_configure.assert_called()
 
     @patch("flask_network_logging.ibm_extension.requests")

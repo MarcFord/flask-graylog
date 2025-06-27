@@ -17,7 +17,6 @@ class TestIntegration:
         """Test complete integration with Flask application."""
         # Setup extension
         extension = GraylogExtension(app=app, get_current_user=mock_get_current_user, log_level=logging.INFO)
-        extension._setup_logging()
 
         # Test logging with request context
         with patch.object(app.logger, "info") as mock_log:
@@ -31,7 +30,13 @@ class TestIntegration:
             )
 
             assert response.status_code == 200
-            mock_log.assert_called_once()
+            # Should have been called twice: once for the test route, once for middleware
+            assert mock_log.call_count == 2
+            # Check the first call was from the test route
+            mock_log.assert_any_call('Test log message')
+            # Check the second call was from middleware (contains request finishing info)
+            middleware_call = mock_log.call_args_list[1]
+            assert 'Finishing request' in middleware_call[0][0]
 
     def test_logging_without_request_context(self, app, mock_get_current_user):
         """Test logging outside of request context."""
@@ -59,14 +64,14 @@ class TestIntegration:
     def test_multiple_loggers_integration(self, app):
         """Test integration with multiple loggers."""
         additional_loggers = ["test.logger1", "test.logger2"]
-        extension = GraylogExtension(app=app, additional_logs=additional_loggers)
-
+        
         with patch("logging.getLogger") as mock_get_logger:
             mock_logger1 = Mock()
             mock_logger2 = Mock()
             mock_get_logger.side_effect = [mock_logger1, mock_logger2]
 
-            extension._setup_logging()
+            # Setup happens automatically during init
+            extension = GraylogExtension(app=app, additional_logs=additional_loggers)
 
             # Verify both additional loggers were configured
             assert mock_get_logger.call_count == 2
@@ -94,11 +99,10 @@ class TestIntegration:
         app.env = "development"  # This will be used as the current environment
         app.config["GRAYLOG_ENVIRONMENT"] = "production"  # Override the config
 
-        # Create extension
-        extension = GraylogExtension(app=app)
         original_handlers = len(app.logger.handlers)
 
-        extension._setup_logging()
+        # Create extension - setup happens automatically during init
+        extension = GraylogExtension(app=app)
 
         # Should add a StreamHandler since app.env ('development') doesn't match GRAYLOG_ENVIRONMENT ('production')
         assert len(app.logger.handlers) == original_handlers + 1
@@ -205,11 +209,10 @@ class TestIntegration:
 
     def test_no_context_filter_integration(self, app):
         """Test integration without context filter."""
-        extension = GraylogExtension(app=app)
-        extension.context_filter = None
-
         original_handlers = len(app.logger.handlers)
-        extension._setup_logging()
+        
+        # Create extension with context filter disabled
+        extension = GraylogExtension(app=app, context_filter=None)
 
         # Should still add handler even without context filter
         assert len(app.logger.handlers) == original_handlers + 1

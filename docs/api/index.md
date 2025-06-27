@@ -31,7 +31,7 @@ The main extension classes for each logging backend:
 
 Filters that add request context and metadata to log records:
 
-- {class}`flask_remote_logging.GraylogContextFilter` - Request context filter
+- {class}`flask_remote_logging.FlaskRemoteLoggingContextFilter` - Request context filter
 - {class}`flask_remote_logging.FlaskRemoteLoggingContextFilter` - Alias for compatibility
 
 ### Middleware
@@ -62,7 +62,7 @@ from flask_remote_logging import (
     AzureLogExtension,          # Azure Monitor
     IBMLogExtension,            # IBM Cloud Logs
     OCILogExtension,            # Oracle Cloud Infrastructure
-    GraylogContextFilter,       # Request context filter
+    FlaskRemoteLoggingContextFilter,       # Request context filter
 )
 ```
 

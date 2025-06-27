@@ -7,7 +7,7 @@ import pytest
 from flask import Flask, g
 
 from flask_remote_logging import GraylogExtension
-from flask_remote_logging.context_filter import GraylogContextFilter
+from flask_remote_logging.context_filter import FlaskRemoteLoggingContextFilter
 
 
 class TestIntegration:
@@ -33,10 +33,10 @@ class TestIntegration:
             # Should have been called twice: once for the test route, once for middleware
             assert mock_log.call_count == 2
             # Check the first call was from the test route
-            mock_log.assert_any_call('Test log message')
+            mock_log.assert_any_call("Test log message")
             # Check the second call was from middleware (contains request finishing info)
             middleware_call = mock_log.call_args_list[1]
-            assert 'Finishing request' in middleware_call[0][0]
+            assert "Finishing request" in middleware_call[0][0]
 
     def test_logging_without_request_context(self, app, mock_get_current_user):
         """Test logging outside of request context."""
@@ -64,7 +64,7 @@ class TestIntegration:
     def test_multiple_loggers_integration(self, app):
         """Test integration with multiple loggers."""
         additional_loggers = ["test.logger1", "test.logger2"]
-        
+
         with patch("logging.getLogger") as mock_get_logger:
             mock_logger1 = Mock()
             mock_logger2 = Mock()
@@ -210,7 +210,7 @@ class TestIntegration:
     def test_no_context_filter_integration(self, app):
         """Test integration without context filter."""
         original_handlers = len(app.logger.handlers)
-        
+
         # Create extension with context filter disabled
         extension = GraylogExtension(app=app, context_filter=None)
 
@@ -243,15 +243,15 @@ class TestIntegration:
         extension = GraylogExtension(app=app)
 
         # Multiple filter instances should be independent
-        filter1 = GraylogContextFilter()
-        filter2 = GraylogContextFilter()
+        filter1 = FlaskRemoteLoggingContextFilter()
+        filter2 = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test1", headers={"X-Request-ID": "req1"}):
-            filter1._GraylogContextFilter__request = filter1.request
+            filter1._FlaskRemoteLoggingContextFilter__request = filter1.request
             req_id_1 = filter1.request_id
 
         with app.test_request_context("/test2", headers={"X-Request-ID": "req2"}):
-            filter2._GraylogContextFilter__request = filter2.request
+            filter2._FlaskRemoteLoggingContextFilter__request = filter2.request
             req_id_2 = filter2.request_id
 
         # Each filter should maintain its own state
@@ -267,7 +267,7 @@ class TestIntegration:
             raise Exception("Database connection error")
 
         extension.get_current_user = problematic_get_user
-        extension.context_filter = GraylogContextFilter(get_current_user=problematic_get_user)
+        extension.context_filter = FlaskRemoteLoggingContextFilter(get_current_user=problematic_get_user)
         extension._setup_logging()
 
         captured_records = []

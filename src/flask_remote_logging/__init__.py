@@ -25,8 +25,8 @@ except (PackageNotFoundError, Exception):  # pylint: disable=broad-exception-cau
 
 from .aws_extension import AWSLogExtension
 from .azure_extension import AzureLogExtension
-from .context_filter import FlaskRemoteLoggingContextFilter, FRLContextFilter, GraylogContextFilter
 from .compat import get_flask_env, set_flask_env
+from .context_filter import FlaskRemoteLoggingContextFilter
 
 # Import main classes for easy access
 from .extension import GraylogExtension
@@ -55,9 +55,7 @@ __all__ = [
     "AzureLog",
     "IBMLog",
     "OCILog",
-    "GraylogContextFilter",
     "FlaskRemoteLoggingContextFilter",
-    "FRLContextFilter",  # Last two are aliases
     "get_flask_env",
     "set_flask_env",
     "__version__",

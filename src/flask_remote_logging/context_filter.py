@@ -15,12 +15,10 @@ Features:
     - Handles cases where no request context is present gracefully.
 
 Classes:
-    - GraylogContextFilter: A logging.Filter subclass that injects contextual data into log records.
-    - FlaskRemoteLoggingContextFilter: Alias for GraylogContextFilter (verbose name).
-    - FRLContextFilter: Alias for GraylogContextFilter (short name).
+    - FlaskRemoteLoggingContextFilter: A logging.Filter subclass that injects contextual data into log records.
 
 Intended Usage:
-    Attach GraylogContextFilter (or one of its aliases) to Flask app loggers to automatically include rich context
+    Attach FlaskRemoteLoggingContextFilter to Flask app loggers to automatically include rich context
     in all log messages, improving traceability and debugging in distributed environments.
 
 """
@@ -35,7 +33,7 @@ from flask import Request, g, has_request_context, request
 from user_agents import parse
 
 
-class GraylogContextFilter(logging.Filter):
+class FlaskRemoteLoggingContextFilter(logging.Filter):
     """
     A logging filter that adds context information to log records.
 
@@ -46,7 +44,7 @@ class GraylogContextFilter(logging.Filter):
 
     Note: Despite the name 'Graylog', this filter is used by all logging extensions
     in the flask-network-logging package. The name is kept for backward compatibility.
-    Use the aliases FRLContextFilter or FlaskRemoteLoggingContextFilter for clearer naming.
+    Use FlaskRemoteLoggingContextFilter for clearer naming.
     """
 
     FILTER_FIELDS = (
@@ -360,6 +358,3 @@ class GraylogContextFilter(logging.Filter):
         return filtered_dict
 
 
-# Convenient aliases for the context filter
-FlaskRemoteLoggingContextFilter = GraylogContextFilter
-FRLContextFilter = GraylogContextFilter

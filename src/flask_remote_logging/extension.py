@@ -9,7 +9,6 @@ except ImportError:
     GelfTcpHandler = None
 
 from .base_extension import BaseLoggingExtension
-from .context_filter import GraylogContextFilter
 
 
 class GraylogExtension(BaseLoggingExtension):
@@ -93,13 +92,15 @@ class GraylogExtension(BaseLoggingExtension):
             "GRAYLOG_ENVIRONMENT": self.app.config.get("GRAYLOG_ENVIRONMENT", "production"),
             "GRAYLOG_EXTRA_FIELDS": self.app.config.get("GRAYLOG_EXTRA_FIELDS", True),
             "GRAYLOG_DEBUG": self.app.config.get("GRAYLOG_DEBUG", True),
-            "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get("FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE", None),
+            "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get(
+                "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE", None
+            ),
         }
 
     def _init_backend(self) -> None:
         """
         Initialize the Graylog backend.
-        
+
         For Graylog, there's no special backend initialization needed.
         """
         pass
@@ -107,17 +108,17 @@ class GraylogExtension(BaseLoggingExtension):
     def _create_log_handler(self) -> Optional[logging.Handler]:
         """
         Create the appropriate log handler for Graylog.
-        
+
         Returns:
             GelfTcpHandler for production environment, StreamHandler otherwise
         """
         if self.app is None:
             return None
-            
+
         # Flask compatibility: support both app.env (Flask 1.x) and config['ENV'] (Flask 2.0+)
         flask_env = self._get_flask_env()
         target_env = self.app.config.get("GRAYLOG_ENVIRONMENT", "production")
-        
+
         if str(flask_env).lower() == target_env.lower():
             if GelfTcpHandler is None:
                 raise ImportError(
@@ -143,9 +144,9 @@ class GraylogExtension(BaseLoggingExtension):
     def _should_skip_setup(self) -> bool:
         """
         Determine if logging setup should be skipped.
-        
+
         For Graylog, we never skip setup - we just use different handlers.
-        
+
         Returns:
             False - Graylog extension always sets up logging
         """
@@ -154,7 +155,7 @@ class GraylogExtension(BaseLoggingExtension):
     def _get_extension_name(self) -> str:
         """
         Get the display name of the extension.
-        
+
         Returns:
             Display name for Graylog extension
         """
@@ -163,7 +164,7 @@ class GraylogExtension(BaseLoggingExtension):
     def _get_middleware_config_key(self) -> str:
         """
         Get the configuration key for middleware override.
-        
+
         Returns:
             Configuration key name for middleware
         """
@@ -179,28 +180,28 @@ class GraylogExtension(BaseLoggingExtension):
     def _get_flask_env(self) -> str:
         """
         Get Flask environment in a version-compatible way.
-        
+
         Supports both Flask 1.x (app.env) and Flask 2.0+ (config['ENV']).
-        
+
         Returns:
             The current Flask environment (e.g., 'development', 'production')
         """
         if self.app is None:
-            return 'production'
-        
+            return "production"
+
         # Try Flask 1.x app.env first, then Flask 2.0+ config['ENV']
         # Use getattr to safely access potentially missing attribute
-        env_attr = getattr(self.app, 'env', None)
+        env_attr = getattr(self.app, "env", None)
         if env_attr is not None:
             return env_attr
-        return self.app.config.get('ENV', 'production')
+        return self.app.config.get("ENV", "production")
 
     # Keep the old _setup_logging method for backward compatibility but mark as deprecated
     def _setup_logging(self) -> None:
         """
         Configures logging for the Flask application based on the provided configuration.
 
-        .. deprecated:: 
+        .. deprecated::
             This method is now handled by the base class. Override _create_log_handler() instead.
         """
         # Delegate to parent implementation

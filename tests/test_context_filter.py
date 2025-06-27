@@ -1,4 +1,4 @@
-"""Tests for the GraylogContextFilter class."""
+"""Tests for the FlaskRemoteLoggingContextFilter class."""
 
 import logging
 import platform
@@ -8,23 +8,23 @@ from unittest.mock import Mock, patch
 import pytest
 from flask import Flask, g
 
-from flask_remote_logging.context_filter import GraylogContextFilter
+from flask_remote_logging.context_filter import FlaskRemoteLoggingContextFilter
 
 
-class TestGraylogContextFilter:
-    """Test cases for the GraylogContextFilter class."""
+class TestFlaskRemoteLoggingContextFilter:
+    """Test cases for the FlaskRemoteLoggingContextFilter class."""
 
     def test_init(self, mock_get_current_user):
         """Test filter initialization."""
-        filter_instance = GraylogContextFilter(get_current_user=mock_get_current_user)
+        filter_instance = FlaskRemoteLoggingContextFilter(get_current_user=mock_get_current_user)
 
         assert filter_instance.get_current_user is mock_get_current_user
-        assert filter_instance._GraylogContextFilter__request is None
-        assert filter_instance._GraylogContextFilter__request_id is None
+        assert filter_instance._FlaskRemoteLoggingContextFilter__request is None
+        assert filter_instance._FlaskRemoteLoggingContextFilter__request_id is None
 
     def test_init_without_get_current_user(self):
         """Test filter initialization without get_current_user function."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         assert filter_instance.get_current_user is None
 
@@ -38,11 +38,11 @@ class TestGraylogContextFilter:
             "password_confirm",
         )
 
-        assert GraylogContextFilter.FILTER_FIELDS == expected_fields
+        assert FlaskRemoteLoggingContextFilter.FILTER_FIELDS == expected_fields
 
     def test_request_property_with_context(self, app):
         """Test request property when in request context."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test"):
             request_obj = filter_instance.request
@@ -51,14 +51,14 @@ class TestGraylogContextFilter:
 
     def test_request_property_without_context(self):
         """Test request property when not in request context."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         request_obj = filter_instance.request
         assert request_obj is None
 
     def test_request_id_from_g(self, app):
         """Test request ID retrieval from Flask g object."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test"):
             g.request_id = "test-request-id-from-g"
@@ -67,7 +67,7 @@ class TestGraylogContextFilter:
 
     def test_request_id_from_x_request_id_header(self, app):
         """Test request ID retrieval from X-Request-ID header."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test", headers={"X-Request-ID": "test-request-id-header"}):
             request_id = filter_instance.request_id
@@ -75,7 +75,7 @@ class TestGraylogContextFilter:
 
     def test_request_id_from_request_id_header(self, app):
         """Test request ID retrieval from Request-ID header."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test", headers={"Request-ID": "test-request-id-header2"}):
             request_id = filter_instance.request_id
@@ -83,7 +83,7 @@ class TestGraylogContextFilter:
 
     def test_request_id_from_x_requestid_header(self, app):
         """Test request ID retrieval from X-RequestId header."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test", headers={"X-RequestId": "test-request-id-header3"}):
             request_id = filter_instance.request_id
@@ -91,7 +91,7 @@ class TestGraylogContextFilter:
 
     def test_request_id_generated_uuid(self, app):
         """Test request ID generation when no ID is provided."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test"):
             with patch("uuid.uuid4") as mock_uuid:
@@ -102,14 +102,14 @@ class TestGraylogContextFilter:
 
     def test_request_id_without_request(self):
         """Test request ID when no request context exists."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         request_id = filter_instance.request_id
         assert request_id is None
 
     def test_filter_method(self, app, log_record):
         """Test the main filter method."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test", query_string="param1=value1"):
             result = filter_instance.filter(log_record)
@@ -121,7 +121,7 @@ class TestGraylogContextFilter:
 
     def test_add_host_info(self, log_record):
         """Test adding host information to log record."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
         filter_instance._add_host_info(log_record)
 
         assert log_record.hostname == platform.node()
@@ -132,7 +132,7 @@ class TestGraylogContextFilter:
 
     def test_add_get_params_with_request(self, app, log_record):
         """Test adding GET parameters when request exists."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test?param1=value1&param2=value2"):
             filter_instance._add_get_params(log_record)
@@ -145,14 +145,14 @@ class TestGraylogContextFilter:
 
     def test_add_get_params_without_request(self, log_record):
         """Test adding GET parameters when no request exists."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
         filter_instance._add_get_params(log_record)
 
         assert log_record.no_request == "True"
 
     def test_add_get_params_filters_sensitive_fields(self, app, log_record):
         """Test that sensitive fields are filtered in GET parameters."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test?password=secret123&username=testuser"):
             filter_instance._add_get_params(log_record)
@@ -163,7 +163,7 @@ class TestGraylogContextFilter:
 
     def test_add_request_id_with_request(self, app, log_record):
         """Test adding request ID when request exists."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test", headers={"X-Request-ID": "test-id"}):
             filter_instance._add_request_id(log_record)
@@ -172,14 +172,14 @@ class TestGraylogContextFilter:
 
     def test_add_request_id_without_request(self, log_record):
         """Test adding request ID when no request exists."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
         filter_instance._add_request_id(log_record)
 
         assert log_record.no_request == "True"
 
     def test_add_request_data_with_request(self, app, log_record, request_headers):
         """Test adding request data when request exists."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test", headers=request_headers):
             filter_instance._add_request_data(log_record)
@@ -198,14 +198,14 @@ class TestGraylogContextFilter:
 
     def test_add_request_data_without_request(self, log_record):
         """Test adding request data when no request exists."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
         filter_instance._add_request_data(log_record)
 
         assert log_record.no_request == "True"
 
     def test_add_user_info_with_user_object(self, log_record, mock_get_current_user, mock_user):
         """Test adding user information from user object."""
-        filter_instance = GraylogContextFilter(get_current_user=mock_get_current_user)
+        filter_instance = FlaskRemoteLoggingContextFilter(get_current_user=mock_get_current_user)
         filter_instance._add_user_info(log_record)
 
         assert log_record.id == "123"
@@ -215,7 +215,7 @@ class TestGraylogContextFilter:
 
     def test_add_user_info_with_user_dict(self, log_record, mock_get_current_user_dict):
         """Test adding user information from user dictionary."""
-        filter_instance = GraylogContextFilter(get_current_user=mock_get_current_user_dict)
+        filter_instance = FlaskRemoteLoggingContextFilter(get_current_user=mock_get_current_user_dict)
         filter_instance._add_user_info(log_record)
 
         assert log_record.id == "456"
@@ -225,7 +225,7 @@ class TestGraylogContextFilter:
 
     def test_add_user_info_without_get_current_user(self, log_record):
         """Test adding user information when get_current_user is not provided."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
         filter_instance._add_user_info(log_record)
 
         # Should not add any user attributes
@@ -235,7 +235,7 @@ class TestGraylogContextFilter:
 
     def test_add_user_info_with_non_callable_get_current_user(self, log_record):
         """Test adding user information when get_current_user is not callable."""
-        filter_instance = GraylogContextFilter(get_current_user="not_callable")
+        filter_instance = FlaskRemoteLoggingContextFilter(get_current_user="not_callable")
         filter_instance._add_user_info(log_record)
 
         # Should not add any user attributes
@@ -255,7 +255,7 @@ class TestGraylogContextFilter:
         def get_partial_user():
             return partial_user
 
-        filter_instance = GraylogContextFilter(get_current_user=get_partial_user)
+        filter_instance = FlaskRemoteLoggingContextFilter(get_current_user=get_partial_user)
         filter_instance._add_user_info(log_record)
 
         assert log_record.id == "789"
@@ -267,7 +267,7 @@ class TestGraylogContextFilter:
         """Test that existing attributes are not overwritten."""
         log_record.id = "existing-id"
 
-        filter_instance = GraylogContextFilter(get_current_user=mock_get_current_user)
+        filter_instance = FlaskRemoteLoggingContextFilter(get_current_user=mock_get_current_user)
         filter_instance._add_user_info(log_record)
 
         # Should not overwrite existing attribute
@@ -277,39 +277,39 @@ class TestGraylogContextFilter:
 
     def test_get_ip_address_from_x_forwarded_for_environ(self, app):
         """Test IP address retrieval from HTTP_X_FORWARDED_FOR environment."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test", environ_base={"HTTP_X_FORWARDED_FOR": "192.168.1.100"}):
-            ip = filter_instance._GraylogContextFilter__get_ip_address()
+            ip = filter_instance._FlaskRemoteLoggingContextFilter__get_ip_address()
             assert ip == "192.168.1.100"
 
     def test_get_ip_address_from_remote_addr_environ(self, app):
         """Test IP address retrieval from REMOTE_ADDR environment."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test", environ_base={"REMOTE_ADDR": "192.168.1.101"}):
-            ip = filter_instance._GraylogContextFilter__get_ip_address()
+            ip = filter_instance._FlaskRemoteLoggingContextFilter__get_ip_address()
             assert ip == "192.168.1.101"
 
     def test_get_ip_address_from_x_real_ip_environ(self, app):
         """Test IP address retrieval from HTTP_X_REAL_IP environment."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test", environ_base={"HTTP_X_REAL_IP": "192.168.1.102"}):
-            ip = filter_instance._GraylogContextFilter__get_ip_address()
+            ip = filter_instance._FlaskRemoteLoggingContextFilter__get_ip_address()
             assert ip == "192.168.1.102"
 
     def test_get_ip_address_from_headers(self, app):
         """Test IP address retrieval from request headers."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test", headers={"X-Forwarded-For": "192.168.1.103"}):
-            ip = filter_instance._GraylogContextFilter__get_ip_address()
+            ip = filter_instance._FlaskRemoteLoggingContextFilter__get_ip_address()
             assert ip == "192.168.1.103"
 
     def test_get_ip_address_from_remote_addr(self, app):
         """Test IP address retrieval from request.remote_addr."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test"):
             # Mock the Flask request
@@ -318,23 +318,23 @@ class TestGraylogContextFilter:
                 mock_request.headers = {}
                 mock_request.remote_addr = "127.0.0.1"
 
-                ip = filter_instance._GraylogContextFilter__get_ip_address()
+                ip = filter_instance._FlaskRemoteLoggingContextFilter__get_ip_address()
                 assert ip == "127.0.0.1"
 
     def test_get_ip_address_without_request(self):
         """Test IP address retrieval when no request exists."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
-        ip = filter_instance._GraylogContextFilter__get_ip_address()
+        ip = filter_instance._FlaskRemoteLoggingContextFilter__get_ip_address()
         assert ip is None
 
     def test_get_client_data_with_request(self, app, request_headers):
         """Test client data retrieval when request exists."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test", headers=request_headers):
             with patch.object(filter_instance, "_get_client_ip", return_value="192.168.1.100"):
-                client_data = filter_instance._GraylogContextFilter__get_client_data()
+                client_data = filter_instance._FlaskRemoteLoggingContextFilter__get_client_data()
 
                 assert "ip_address" in client_data
                 assert "browser" in client_data
@@ -347,14 +347,14 @@ class TestGraylogContextFilter:
 
     def test_get_client_data_without_request(self):
         """Test client data retrieval when no request exists."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
-        client_data = filter_instance._GraylogContextFilter__get_client_data()
+        client_data = filter_instance._FlaskRemoteLoggingContextFilter__get_client_data()
         assert client_data == {}
 
     def test_filter_param_fields(self):
         """Test filtering of sensitive parameter fields."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         params = {
             "username": "testuser",
@@ -363,7 +363,7 @@ class TestGraylogContextFilter:
             "email": "test@example.com",
         }
 
-        filtered = filter_instance._GraylogContextFilter__filter_param_fields(params)
+        filtered = filter_instance._FlaskRemoteLoggingContextFilter__filter_param_fields(params)
 
         assert filtered["username"] == "testuser"
         assert filtered["password"] == "*********"  # 9 asterisks
@@ -372,14 +372,14 @@ class TestGraylogContextFilter:
 
     def test_filter_param_fields_empty_dict(self):
         """Test filtering of empty parameter dictionary."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
-        filtered = filter_instance._GraylogContextFilter__filter_param_fields({})
+        filtered = filter_instance._FlaskRemoteLoggingContextFilter__filter_param_fields({})
         assert filtered == {}
 
     def test_get_client_ip_calls_get_ip_address(self, app):
         """Test that _get_client_ip correctly calls __get_ip_address."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test", headers={"X-Forwarded-For": "192.168.1.100"}):
             ip = filter_instance._get_client_ip()
@@ -395,7 +395,7 @@ class TestGraylogContextFilter:
         def get_problematic_user():
             return problematic_user
 
-        filter_instance = GraylogContextFilter(get_current_user=get_problematic_user)
+        filter_instance = FlaskRemoteLoggingContextFilter(get_current_user=get_problematic_user)
         filter_instance._add_user_info(log_record)
 
         # Should skip the problematic field but add others
@@ -404,7 +404,7 @@ class TestGraylogContextFilter:
 
     def test_request_id_header_precedence(self, app):
         """Test that request ID headers are checked in correct precedence."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         # Test that g.request_id takes precedence
         with app.test_request_context("/test", headers={"X-Request-ID": "header-id"}):
@@ -414,7 +414,7 @@ class TestGraylogContextFilter:
 
     def test_multiple_calls_same_request_id(self, app):
         """Test that multiple calls return the same request ID."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         with app.test_request_context("/test", headers={"X-Request-ID": "consistent-id"}):
             first_call = filter_instance.request_id

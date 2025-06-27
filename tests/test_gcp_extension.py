@@ -7,7 +7,7 @@ import pytest
 from flask import Flask
 
 from flask_remote_logging import GCPLogExtension
-from flask_remote_logging.context_filter import GraylogContextFilter
+from flask_remote_logging.context_filter import FlaskRemoteLoggingContextFilter
 
 
 class TestGCPLogExtension:
@@ -139,7 +139,7 @@ class TestGCPLogExtension:
     def test_setup_logging_without_app(self):
         """Test _setup_logging handles no app gracefully."""
         extension = GCPLogExtension()
-        
+
         # Should not raise an error, just return early
         extension._setup_logging()
         # Verify that logging setup was not performed
@@ -261,14 +261,14 @@ class TestGCPLogExtension:
 
     @patch("flask_remote_logging.gcp_extension.cloud_logging")
     def test_context_filter_creation(self, mock_cloud_logging, app):
-        """Test that GraylogContextFilter is created by default."""
+        """Test that FlaskRemoteLoggingContextFilter is created by default."""
         mock_client = MagicMock()
         mock_cloud_logging.Client.return_value = mock_client
 
         extension = GCPLogExtension(app=app)
 
         assert extension.context_filter is not None
-        assert isinstance(extension.context_filter, GraylogContextFilter)
+        assert isinstance(extension.context_filter, FlaskRemoteLoggingContextFilter)
 
     @patch("flask_remote_logging.gcp_extension.cloud_logging")
     def test_log_formatter_creation(self, mock_cloud_logging, app):

@@ -52,7 +52,7 @@ class GCPLogExtension(BaseLoggingExtension):
         # GCP-specific attributes
         self.cloud_logging_client = None
         self._original_log_level = log_level  # Store the original parameter
-        
+
         # Call parent constructor
         super().__init__(
             app=app,
@@ -67,7 +67,7 @@ class GCPLogExtension(BaseLoggingExtension):
     def _get_config_from_app(self) -> Dict[str, Any]:
         """
         Extract configuration from the Flask application.
-        
+
         Returns:
             Dictionary containing the extension's configuration
         """
@@ -104,25 +104,27 @@ class GCPLogExtension(BaseLoggingExtension):
     def _create_log_handler(self) -> Optional[logging.Handler]:
         """
         Create the appropriate log handler for GCP Cloud Logging.
-        
+
         Returns:
             A logging.Handler instance configured for GCP Cloud Logging,
             or None if setup should be skipped
         """
         # Check if we should use GCP Cloud Logging
-        if (self.cloud_logging_client and 
-            CloudLoggingHandler and 
-            self.app and
-            str(self._get_flask_env()).lower() == self.config.get("GCP_ENVIRONMENT", "production").lower()):
-            
+        if (
+            self.cloud_logging_client
+            and CloudLoggingHandler
+            and self.app
+            and str(self._get_flask_env()).lower() == self.config.get("GCP_ENVIRONMENT", "production").lower()
+        ):
+
             try:
                 # Create GCP Cloud Logging handler
                 return CloudLoggingHandler(
                     self.cloud_logging_client,
                     name=self.config.get("GCP_LOG_NAME", "flask-app"),
                     labels={
-                        "service_name": self.config.get("GCP_SERVICE_NAME", getattr(self.app, 'name', 'flask-app')),
-                        "app_name": self.config.get("GCP_APP_NAME", getattr(self.app, 'name', 'flask-app')),
+                        "service_name": self.config.get("GCP_SERVICE_NAME", getattr(self.app, "name", "flask-app")),
+                        "app_name": self.config.get("GCP_APP_NAME", getattr(self.app, "name", "flask-app")),
                         "environment": self.config.get("GCP_ENVIRONMENT", "production"),
                     },
                 )
@@ -130,7 +132,7 @@ class GCPLogExtension(BaseLoggingExtension):
                 # Fallback to stream handler if GCP setup fails
                 if self.app:
                     print(f"Warning: Failed to setup Google Cloud Logging: {e}")  # Print warning for test compatibility
-                
+
         # Use stream handler as fallback
         handler = logging.StreamHandler()
         if self.log_formatter:
@@ -140,7 +142,7 @@ class GCPLogExtension(BaseLoggingExtension):
     def _should_skip_setup(self) -> bool:
         """
         Determine if logging setup should be skipped based on environment or config.
-        
+
         Returns:
             True if setup should be skipped, False otherwise
         """
@@ -154,7 +156,7 @@ class GCPLogExtension(BaseLoggingExtension):
     def _get_extension_name(self) -> str:
         """
         Get the display name of the extension for logging purposes.
-        
+
         Returns:
             String name of the extension
         """
@@ -163,7 +165,7 @@ class GCPLogExtension(BaseLoggingExtension):
     def _get_middleware_config_key(self) -> str:
         """
         Get the configuration key used to override middleware settings.
-        
+
         Returns:
             Configuration key name for middleware override
         """
@@ -177,13 +179,13 @@ class GCPLogExtension(BaseLoggingExtension):
     def init_app(self, app: Flask) -> None:
         """
         Initialize the extension with a Flask application.
-        
+
         Args:
             app: Flask application instance
         """
         # Call parent init_app first
         super().init_app(app)
-        
+
         # Override log level with GCP-specific config if using default parameter
         if self._original_log_level == logging.INFO:  # Only if parameter was default
             gcp_log_level = self.config.get("GCP_LOG_LEVEL")

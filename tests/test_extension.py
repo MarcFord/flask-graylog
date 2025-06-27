@@ -8,7 +8,7 @@ from flask import Flask
 from pygelf import GelfTcpHandler
 
 from flask_remote_logging import GraylogExtension
-from flask_remote_logging.context_filter import GraylogContextFilter
+from flask_remote_logging.context_filter import FlaskRemoteLoggingContextFilter
 
 
 class TestGraylogExtension:
@@ -62,7 +62,7 @@ class TestGraylogExtension:
 
         assert extension.app is app
         assert extension.config is not None
-        assert isinstance(extension.context_filter, GraylogContextFilter)
+        assert isinstance(extension.context_filter, FlaskRemoteLoggingContextFilter)
         assert extension.log_formatter is not None
 
     def test_init_app_with_existing_filter(self, app):
@@ -157,7 +157,7 @@ class TestGraylogExtension:
 
         # Should not raise an error, just return without setup
         extension._setup_logging()
-        
+
         # Verify no setup was done
         assert not extension._logging_setup
 

@@ -7,7 +7,7 @@ import pytest
 from flask import Flask
 
 from flask_remote_logging import AWSLogExtension
-from flask_remote_logging.context_filter import GraylogContextFilter
+from flask_remote_logging.context_filter import FlaskRemoteLoggingContextFilter
 
 
 class TestAWSLogExtension:
@@ -146,7 +146,7 @@ class TestAWSLogExtension:
 
         # Should have created context filter
         assert extension.context_filter is not None
-        assert isinstance(extension.context_filter, GraylogContextFilter)
+        assert isinstance(extension.context_filter, FlaskRemoteLoggingContextFilter)
 
     @patch("flask_remote_logging.aws_extension.boto3")
     def test_setup_logging_with_development_environment(self, mock_boto3, app):
@@ -228,7 +228,7 @@ class TestAWSLogExtension:
         extension.init_app(app)
         # Reset mock call counts since init_app may call it
         mock_client.reset_mock()
-        
+
         extension._ensure_log_group_exists()
 
         mock_client.describe_log_groups.assert_called_once_with(logGroupNamePrefix="/aws/lambda/test")
@@ -278,7 +278,7 @@ class TestAWSLogExtension:
         app.config.update({"AWS_LOG_GROUP": "/aws/lambda/test", "AWS_LOG_STREAM": "test-stream"})
 
         extension = AWSLogExtension(app=app)
-        
+
         # Reset mock to only track calls made after automatic setup
         mock_client.describe_log_streams.reset_mock()
         extension._ensure_log_stream_exists()
@@ -333,7 +333,7 @@ class TestAWSLogExtension:
 
             # The AWS extension should create a default context filter during init
             assert extension.context_filter is not None
-            assert isinstance(extension.context_filter, GraylogContextFilter)
+            assert isinstance(extension.context_filter, FlaskRemoteLoggingContextFilter)
 
     def test_log_formatter_creation(self, app):
         """Test that log formatter is created correctly."""

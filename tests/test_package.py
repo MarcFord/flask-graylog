@@ -36,7 +36,7 @@ class TestPackageModule:
             OCILog,
             OCILogExtension,
         )
-        from flask_remote_logging.context_filter import GraylogContextFilter
+        from flask_remote_logging.context_filter import FlaskRemoteLoggingContextFilter
 
         assert GraylogExtension is not None
         assert GCPLogExtension is not None
@@ -50,7 +50,7 @@ class TestPackageModule:
         assert AzureLog is not None
         assert IBMLog is not None
         assert OCILog is not None
-        assert GraylogContextFilter is not None
+        assert FlaskRemoteLoggingContextFilter is not None
 
         # Test aliases work correctly
         assert Graylog == GraylogExtension

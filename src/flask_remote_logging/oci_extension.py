@@ -6,10 +6,8 @@ to Oracle Cloud Infrastructure Logging. It integrates with the flask-network-log
 provide comprehensive logging capabilities for OCI environments.
 """
 
-import json
 import logging
 import os
-import socket
 import time
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
@@ -84,7 +82,7 @@ class OCILogExtension(BaseLoggingExtension):
         self.logging_client = None
         self.log_group_id = None
         self.log_id = None
-        
+
         # Call parent constructor
         super().__init__(
             app=app,
@@ -97,13 +95,13 @@ class OCILogExtension(BaseLoggingExtension):
         )
 
     # Abstract method implementations
-    
+
     def _get_config_from_app(self) -> Dict[str, Any]:
         """Extract configuration from the Flask application."""
         if not self.app:
             return {}
 
-        app_name = self.app.config.get("OCI_APP_NAME", getattr(self.app, 'name', 'flask-app'))
+        app_name = self.app.config.get("OCI_APP_NAME", getattr(self.app, "name", "flask-app"))
 
         return {
             "OCI_CONFIG_FILE": self.app.config.get("OCI_CONFIG_FILE", os.getenv("OCI_CONFIG_FILE", "~/.oci/config")),
@@ -125,14 +123,14 @@ class OCILogExtension(BaseLoggingExtension):
                 # Initialize OCI config and logging client
                 config_file = self.config.get("OCI_CONFIG_FILE", "~/.oci/config")
                 profile = self.config.get("OCI_PROFILE", "DEFAULT")
-                
+
                 config = oci.config.from_file(config_file, profile)
                 self.logging_client = oci.logging.LoggingManagementClient(config)
-                
+
                 # Store configuration values
                 self.log_group_id = self.config.get("OCI_LOG_GROUP_ID")
                 self.log_id = self.config.get("OCI_LOG_ID")
-                
+
             except Exception:
                 # If OCI initialization fails, we'll fallback to stream handler
                 self.logging_client = None
@@ -166,8 +164,7 @@ class OCILogExtension(BaseLoggingExtension):
     def _should_skip_setup(self) -> bool:
         """Determine if logging setup should be skipped."""
         environment = self.config.get("OCI_ENVIRONMENT", "production")
-        return (environment not in ["oci", "production"] and 
-                not self.config.get("OCI_LOG_GROUP_ID"))
+        return environment not in ["oci", "production"] and not self.config.get("OCI_LOG_GROUP_ID")
 
     def _get_extension_name(self) -> str:
         """Get the display name of the extension."""
@@ -213,14 +210,14 @@ class OCILogHandler(logging.Handler):
             level: Logging level
         """
         super().__init__(level)
-        
+
         if not logging_client:
             raise ValueError("logging_client is required")
         if not log_group_id:
             raise ValueError("log_group_id is required")
         if not log_id:
             raise ValueError("log_id is required")
-        
+
         self.logging_client = logging_client
         self.log_group_id = log_group_id
         self.log_id = log_id
@@ -238,7 +235,7 @@ class OCILogHandler(logging.Handler):
         try:
             # Format the log record
             log_entry = self.format(record)
-            
+
             # Create the log entry for OCI
             log_entry_data = {
                 "time": datetime.fromtimestamp(record.created).isoformat() + "Z",
@@ -252,10 +249,10 @@ class OCILogHandler(logging.Handler):
                     "app": self.app_name,
                 },
             }
-            
+
             # Send to OCI Logging
             self._send_to_oci_logging(log_entry_data)
-            
+
         except Exception:
             # Don't let logging errors break the application
             self.handleError(record)
@@ -289,7 +286,7 @@ class OCILogHandler(logging.Handler):
                         )
                     ],
                 )
-                
+
                 # Send the logs
                 self.logging_client.put_logs(
                     log_id=self.log_id,

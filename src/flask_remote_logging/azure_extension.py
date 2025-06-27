@@ -80,7 +80,7 @@ class AzureLogExtension(BaseLoggingExtension):
             get_current_user: Function to retrieve current user information
             log_level: Logging level (default: INFO)
             additional_logs: List of additional logger names to configure
-            context_filter: Custom logging filter (if None, GraylogContextFilter is used)
+            context_filter: Custom logging filter (if None, FlaskRemoteLoggingContextFilter is used)
             log_formatter: Custom log formatter
             enable_middleware: Whether to enable request/response middleware (default: True)
         """
@@ -88,7 +88,7 @@ class AzureLogExtension(BaseLoggingExtension):
         self.workspace_id = None
         self.workspace_key = None
         self.log_type = None
-        
+
         # Call parent constructor
         super().__init__(
             app=app,
@@ -99,13 +99,13 @@ class AzureLogExtension(BaseLoggingExtension):
             log_formatter=log_formatter,
             enable_middleware=enable_middleware,
         )
-        
+
         # Azure extension expects additional_logs to be [] if None
         if self.additional_logs is None:
             self.additional_logs = []
 
     # Abstract method implementations
-    
+
     def _get_config_from_app(self) -> Dict[str, Any]:
         """
         Extract Azure Monitor configuration from Flask app config.
@@ -121,9 +121,13 @@ class AzureLogExtension(BaseLoggingExtension):
             "AZURE_WORKSPACE_KEY": self.app.config.get("AZURE_WORKSPACE_KEY", os.getenv("AZURE_WORKSPACE_KEY")),
             "AZURE_LOG_TYPE": self.app.config.get("AZURE_LOG_TYPE", os.getenv("AZURE_LOG_TYPE", "FlaskAppLogs")),
             "AZURE_LOG_LEVEL": self.app.config.get("AZURE_LOG_LEVEL", os.getenv("AZURE_LOG_LEVEL", "INFO")),
-            "AZURE_ENVIRONMENT": self.app.config.get("AZURE_ENVIRONMENT", os.getenv("AZURE_ENVIRONMENT", "development")),
+            "AZURE_ENVIRONMENT": self.app.config.get(
+                "AZURE_ENVIRONMENT", os.getenv("AZURE_ENVIRONMENT", "development")
+            ),
             "AZURE_TIMEOUT": self.app.config.get("AZURE_TIMEOUT", os.getenv("AZURE_TIMEOUT", "30")),
-            "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get("FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE", None),
+            "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get(
+                "FLASK_REMOTE_LOGGING_ENABLE_MIDDLEWARE", None
+            ),
         }
 
     def _init_backend(self) -> None:
@@ -138,7 +142,7 @@ class AzureLogExtension(BaseLoggingExtension):
         """Create the appropriate log handler for Azure Monitor."""
         # Only set up Azure logging in Azure environments or when explicitly configured
         environment = self.config.get("AZURE_ENVIRONMENT", "development")
-        
+
         if environment in ["azure", "production"] or self.config.get("AZURE_WORKSPACE_ID"):
             if self.workspace_id and self.workspace_key:
                 # Create Azure Monitor handler
@@ -158,8 +162,7 @@ class AzureLogExtension(BaseLoggingExtension):
     def _should_skip_setup(self) -> bool:
         """Determine if setup should be skipped based on environment."""
         environment = self.config.get("AZURE_ENVIRONMENT", "development")
-        return (environment not in ["azure", "production"] and 
-                not self.config.get("AZURE_WORKSPACE_ID"))
+        return environment not in ["azure", "production"] and not self.config.get("AZURE_WORKSPACE_ID")
 
     def _get_extension_name(self) -> str:
         """Get the display name of the extension."""
@@ -191,8 +194,6 @@ class AzureLogExtension(BaseLoggingExtension):
         if not self.workspace_id or not self.workspace_key:
             if self.app:
                 self.app.logger.warning("Azure Monitor Logs: Missing workspace ID or key")
-
-
 
 
 class AzureMonitorHandler(logging.Handler):

@@ -32,11 +32,13 @@ class TestOCILogExtension:
     def test_init_with_app(self):
         """Test extension initialization with Flask app."""
         app = Flask(__name__)
-        app.config.update({
-            "OCI_LOG_GROUP_ID": "ocid1.loggroup.oc1...",
-            "OCI_LOG_ID": "ocid1.log.oc1...",
-            "OCI_ENVIRONMENT": "production"
-        })
+        app.config.update(
+            {
+                "OCI_LOG_GROUP_ID": "ocid1.loggroup.oc1...",
+                "OCI_LOG_ID": "ocid1.log.oc1...",
+                "OCI_ENVIRONMENT": "production",
+            }
+        )
 
         with patch("flask_remote_logging.oci_extension.oci"):
             extension = OCILogExtension(app=app)
@@ -45,11 +47,7 @@ class TestOCILogExtension:
 
     def test_init_with_parameters(self):
         """Test extension initialization with custom parameters."""
-        extension = OCILogExtension(
-            log_level=logging.DEBUG,
-            additional_logs=["custom.logger"],
-            enable_middleware=False
-        )
+        extension = OCILogExtension(log_level=logging.DEBUG, additional_logs=["custom.logger"], enable_middleware=False)
 
         assert extension.log_level == logging.DEBUG
         assert extension.additional_logs == ["custom.logger"]
@@ -57,11 +55,13 @@ class TestOCILogExtension:
 
     def test_init_app_method(self, app):
         """Test init_app method."""
-        app.config.update({
-            "OCI_LOG_GROUP_ID": "ocid1.loggroup.oc1...",
-            "OCI_LOG_ID": "ocid1.log.oc1...",
-            "OCI_ENVIRONMENT": "production"
-        })
+        app.config.update(
+            {
+                "OCI_LOG_GROUP_ID": "ocid1.loggroup.oc1...",
+                "OCI_LOG_ID": "ocid1.log.oc1...",
+                "OCI_ENVIRONMENT": "production",
+            }
+        )
 
         extension = OCILogExtension()
 
@@ -95,15 +95,17 @@ class TestOCILogExtension:
     def test_get_config_from_app_with_custom_values(self):
         """Test configuration extraction with custom values."""
         app = Flask(__name__)
-        app.config.update({
-            "OCI_CONFIG_FILE": "~/.oci/custom_config",
-            "OCI_PROFILE": "CUSTOM_PROFILE",
-            "OCI_LOG_GROUP_ID": "ocid1.loggroup.oc1...",
-            "OCI_LOG_ID": "ocid1.log.oc1...",
-            "OCI_APP_NAME": "custom-app",
-            "OCI_LOG_LEVEL": "DEBUG",
-            "OCI_ENVIRONMENT": "production",
-        })
+        app.config.update(
+            {
+                "OCI_CONFIG_FILE": "~/.oci/custom_config",
+                "OCI_PROFILE": "CUSTOM_PROFILE",
+                "OCI_LOG_GROUP_ID": "ocid1.loggroup.oc1...",
+                "OCI_LOG_ID": "ocid1.log.oc1...",
+                "OCI_APP_NAME": "custom-app",
+                "OCI_LOG_LEVEL": "DEBUG",
+                "OCI_ENVIRONMENT": "production",
+            }
+        )
 
         extension = OCILogExtension()
         extension.app = app
@@ -127,11 +129,13 @@ class TestOCILogExtension:
     @patch("flask_remote_logging.oci_extension.oci")
     def test_setup_logging_with_oci_environment(self, mock_oci, app):
         """Test logging setup with OCI environment."""
-        app.config.update({
-            "OCI_ENVIRONMENT": "production",
-            "OCI_LOG_GROUP_ID": "ocid1.loggroup.oc1...",
-            "OCI_LOG_ID": "ocid1.log.oc1...",
-        })
+        app.config.update(
+            {
+                "OCI_ENVIRONMENT": "production",
+                "OCI_LOG_GROUP_ID": "ocid1.loggroup.oc1...",
+                "OCI_LOG_ID": "ocid1.log.oc1...",
+            }
+        )
 
         extension = OCILogExtension(app=app)
 
@@ -151,12 +155,14 @@ class TestOCILogExtension:
     def test_init_backend_with_oci(self, mock_oci):
         """Test OCI backend initialization with OCI SDK available."""
         app = Flask(__name__)
-        app.config.update({
-            "OCI_CONFIG_FILE": "~/.oci/config",
-            "OCI_PROFILE": "DEFAULT",
-            "OCI_LOG_GROUP_ID": "ocid1.loggroup.oc1...",
-            "OCI_LOG_ID": "ocid1.log.oc1...",
-        })
+        app.config.update(
+            {
+                "OCI_CONFIG_FILE": "~/.oci/config",
+                "OCI_PROFILE": "DEFAULT",
+                "OCI_LOG_GROUP_ID": "ocid1.loggroup.oc1...",
+                "OCI_LOG_ID": "ocid1.log.oc1...",
+            }
+        )
 
         extension = OCILogExtension()
         extension.app = app
@@ -237,10 +243,7 @@ class TestOCILogExtension:
     def test_should_skip_setup_production_environment(self):
         """Test setup not skipping in production environment."""
         extension = OCILogExtension()
-        extension.config = {
-            "OCI_ENVIRONMENT": "production",
-            "OCI_LOG_GROUP_ID": "ocid1.loggroup.oc1..."
-        }
+        extension.config = {"OCI_ENVIRONMENT": "production", "OCI_LOG_GROUP_ID": "ocid1.loggroup.oc1..."}
 
         assert extension._should_skip_setup() is False
 
@@ -271,7 +274,7 @@ class TestOCILogHandler:
             logging_client=mock_client,
             log_group_id="ocid1.loggroup.oc1...",
             log_id="ocid1.log.oc1...",
-            app_name="test-app"
+            app_name="test-app",
         )
 
         assert handler.logging_client == mock_client
@@ -283,9 +286,7 @@ class TestOCILogHandler:
         """Test handler initialization with default values."""
         mock_client = Mock()
         handler = OCILogHandler(
-            logging_client=mock_client,
-            log_group_id="ocid1.loggroup.oc1...",
-            log_id="ocid1.log.oc1..."
+            logging_client=mock_client, log_group_id="ocid1.loggroup.oc1...", log_id="ocid1.log.oc1..."
         )
 
         assert handler.app_name == "flask-app"
@@ -294,24 +295,14 @@ class TestOCILogHandler:
         """Test handler initialization validation."""
         with pytest.raises(ValueError, match="logging_client is required"):
             OCILogHandler(
-                logging_client=None,  # type: ignore
-                log_group_id="ocid1.loggroup.oc1...",
-                log_id="ocid1.log.oc1..."
+                logging_client=None, log_group_id="ocid1.loggroup.oc1...", log_id="ocid1.log.oc1..."  # type: ignore
             )
 
         with pytest.raises(ValueError, match="log_group_id is required"):
-            OCILogHandler(
-                logging_client=Mock(),
-                log_group_id=None,  # type: ignore
-                log_id="ocid1.log.oc1..."
-            )
+            OCILogHandler(logging_client=Mock(), log_group_id=None, log_id="ocid1.log.oc1...")  # type: ignore
 
         with pytest.raises(ValueError, match="log_id is required"):
-            OCILogHandler(
-                logging_client=Mock(),
-                log_group_id="ocid1.loggroup.oc1...",
-                log_id=None  # type: ignore
-            )
+            OCILogHandler(logging_client=Mock(), log_group_id="ocid1.loggroup.oc1...", log_id=None)  # type: ignore
 
     @patch("flask_remote_logging.oci_extension.oci")
     def test_emit_success(self, mock_oci):
@@ -321,13 +312,12 @@ class TestOCILogHandler:
             logging_client=mock_client,
             log_group_id="ocid1.loggroup.oc1...",
             log_id="ocid1.log.oc1...",
-            app_name="test-app"
+            app_name="test-app",
         )
         handler.setFormatter(logging.Formatter("%(message)s"))
 
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="", lineno=0,
-            msg="Test message", args=(), exc_info=None
+            name="test", level=logging.INFO, pathname="", lineno=0, msg="Test message", args=(), exc_info=None
         )
 
         with patch.object(handler, "_send_to_oci_logging") as mock_send:
@@ -341,13 +331,12 @@ class TestOCILogHandler:
             logging_client=mock_client,
             log_group_id="ocid1.loggroup.oc1...",
             log_id="ocid1.log.oc1...",
-            app_name="test-app"
+            app_name="test-app",
         )
         handler.setFormatter(logging.Formatter("%(message)s"))
 
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="", lineno=0,
-            msg="Test message", args=(), exc_info=None
+            name="test", level=logging.INFO, pathname="", lineno=0, msg="Test message", args=(), exc_info=None
         )
 
         with patch.object(handler, "_send_to_oci_logging", side_effect=Exception("API Error")):
@@ -359,16 +348,10 @@ class TestOCILogHandler:
     def test_send_log_data_without_oci(self):
         """Test sending log data without OCI SDK."""
         handler = OCILogHandler(
-            logging_client=Mock(),
-            log_group_id="ocid1.loggroup.oc1...",
-            log_id="ocid1.log.oc1...",
-            app_name="test-app"
+            logging_client=Mock(), log_group_id="ocid1.loggroup.oc1...", log_id="ocid1.log.oc1...", app_name="test-app"
         )
 
-        log_entry = {
-            "time": "2023-01-01T00:00:00Z",
-            "data": {"message": "test"}
-        }
+        log_entry = {"time": "2023-01-01T00:00:00Z", "data": {"message": "test"}}
 
         with pytest.raises(RuntimeError, match="OCI SDK is not available"):
             handler._send_to_oci_logging(log_entry)
@@ -381,13 +364,10 @@ class TestOCILogHandler:
             logging_client=mock_client,
             log_group_id="ocid1.loggroup.oc1...",
             log_id="ocid1.log.oc1...",
-            app_name="test-app"
+            app_name="test-app",
         )
 
-        log_entry = {
-            "time": "2023-01-01T00:00:00Z",
-            "data": {"message": "test message", "level": "INFO"}
-        }
+        log_entry = {"time": "2023-01-01T00:00:00Z", "data": {"message": "test message", "level": "INFO"}}
 
         handler._send_to_oci_logging(log_entry)
 
@@ -406,7 +386,7 @@ class TestOCILogHandler:
                 logging_client=mock_client,
                 log_group_id="ocid1.loggroup.oc1...",
                 log_id="ocid1.log.oc1...",
-                app_name="test-app"
+                app_name="test-app",
             )
             handler.setFormatter(logging.Formatter("%(message)s"))
 

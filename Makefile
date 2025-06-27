@@ -20,15 +20,15 @@ help:
 
 # Test the package
 test:
-	uv run pytest --cov=src/flask_network_logging --cov-report=term-missing -v
+	uv run pytest --cov=src/flask_remote_logging --cov-report=term-missing -v
 
 # Run linting
 lint:
 	uv tool run black --check --diff src/ tests/ --line-length 120
 	uv tool run isort --check-only --diff src/ tests/ --profile black --line-length 120
 	uv tool run flake8 src/ --max-line-length=120 --extend-ignore=E203,W503
-	uv tool run mypy src/flask_network_logging/ --python-version 3.9 --ignore-missing-imports
-	uv tool run bandit -r src/flask_network_logging/
+	uv tool run mypy src/flask_remote_logging/ --python-version 3.9 --ignore-missing-imports
+	uv tool run bandit -r src/flask_remote_logging/
 
 # Format code
 format:
@@ -92,18 +92,18 @@ pre-release: test lint
 # Run security audit
 security:
 	@echo "Running security audit..."
-	uv tool run bandit -r src/flask_network_logging/
+	uv tool run bandit -r src/flask_remote_logging/
 	uv tool install safety
 	uv tool run safety scan
 
 # Check version consistency
 check-version:
 	@echo "Checking version from git tags..."
-	@python -c "import src.flask_network_logging; \
-		package_version = src.flask_network_logging.__version__; \
+	@python -c "import src.flask_remote_logging; \
+		package_version = src.flask_remote_logging.__version__; \
 		print(f'Package version (from git): {package_version}'); \
 		print('⚠️  Development version detected (no git tags)' if package_version.endswith('-dev') else '✅ Version successfully derived from git tags!')"
 
 # Run tests in CI mode (with XML coverage)
 ci-test:
-	uv run pytest --cov=src/flask_network_logging --cov-report=xml --cov-report=term-missing -v
+	uv run pytest --cov=src/flask_remote_logging --cov-report=xml --cov-report=term-missing -v

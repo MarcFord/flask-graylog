@@ -8,7 +8,7 @@ import pytest
 from flask import Flask
 
 from flask_remote_logging.azure_extension import AzureLogExtension, AzureMonitorHandler
-from flask_remote_logging.context_filter import GraylogContextFilter
+from flask_remote_logging.context_filter import FlaskRemoteLoggingContextFilter
 
 
 class TestAzureLogExtension:
@@ -140,7 +140,7 @@ class TestAzureLogExtension:
         app.config.update({"AZURE_ENVIRONMENT": "development"})
 
         extension = AzureLogExtension(app)
-        
+
         # Context filter should be created during init but logging should be skipped
         assert extension.context_filter is not None
         # Verify the extension was properly initialized but skipped actual logging setup
@@ -183,7 +183,7 @@ class TestAzureLogExtension:
 
     @patch("flask_remote_logging.azure_extension.requests")
     def test_setup_logging_with_context_filter(self, mock_requests):
-        """Test that GraylogContextFilter is created by default."""
+        """Test that FlaskRemoteLoggingContextFilter is created by default."""
         app = Flask(__name__)
         app.config.update(
             {
@@ -196,7 +196,7 @@ class TestAzureLogExtension:
         extension = AzureLogExtension(app)
         extension._setup_logging()
 
-        assert isinstance(extension.context_filter, GraylogContextFilter)
+        assert isinstance(extension.context_filter, FlaskRemoteLoggingContextFilter)
 
     @patch("flask_remote_logging.azure_extension.requests")
     def test_setup_logging_with_additional_logs(self, mock_requests):
@@ -233,7 +233,7 @@ class TestAzureLogExtension:
         extension._setup_logging()
 
         assert extension.context_filter is not None
-        assert isinstance(extension.context_filter, GraylogContextFilter)
+        assert isinstance(extension.context_filter, FlaskRemoteLoggingContextFilter)
 
     @patch("flask_remote_logging.azure_extension.requests")
     def test_log_formatter_creation(self, mock_requests):

@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 import pytest
 from flask import Flask
 
-from flask_remote_logging import GraylogContextFilter, GraylogExtension
+from flask_remote_logging import FlaskRemoteLoggingContextFilter, GraylogExtension
 
 
 class TestPerformanceAndEdgeCases:
@@ -15,7 +15,7 @@ class TestPerformanceAndEdgeCases:
 
     def test_large_number_of_parameters(self, app):
         """Test handling of large number of request parameters."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
         log_record = logging.LogRecord(
             name="test",
             level=logging.INFO,
@@ -42,7 +42,7 @@ class TestPerformanceAndEdgeCases:
 
     def test_very_long_user_agent(self, app):
         """Test handling of very long user agent strings."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
         log_record = logging.LogRecord(
             name="test",
             level=logging.INFO,
@@ -64,7 +64,7 @@ class TestPerformanceAndEdgeCases:
 
     def test_unicode_parameters(self, app):
         """Test handling of unicode characters in parameters."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
         log_record = logging.LogRecord(
             name="test",
             level=logging.INFO,
@@ -92,7 +92,7 @@ class TestPerformanceAndEdgeCases:
 
     def test_malformed_user_agent(self, app):
         """Test handling of malformed user agent strings."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
         log_record = logging.LogRecord(
             name="test",
             level=logging.INFO,
@@ -118,7 +118,7 @@ class TestPerformanceAndEdgeCases:
 
     def test_missing_request_attributes(self, app):
         """Test handling when request object is missing expected attributes."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
         log_record = logging.LogRecord(
             name="test",
             level=logging.INFO,
@@ -162,7 +162,7 @@ class TestPerformanceAndEdgeCases:
 
     def test_memory_usage_with_many_log_records(self, app):
         """Test memory usage doesn't grow excessively with many log records."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         # Process many log records
         for i in range(1000):
@@ -185,8 +185,8 @@ class TestPerformanceAndEdgeCases:
 
     def test_concurrent_request_contexts(self, app):
         """Test behavior with multiple request contexts."""
-        filter1 = GraylogContextFilter()
-        filter2 = GraylogContextFilter()
+        filter1 = FlaskRemoteLoggingContextFilter()
+        filter2 = FlaskRemoteLoggingContextFilter()
 
         log_record1 = logging.LogRecord(
             name="test1",
@@ -249,7 +249,7 @@ class TestPerformanceAndEdgeCases:
             user.self_ref = user  # Circular reference
             return user
 
-        filter_instance = GraylogContextFilter(get_current_user=get_circular_user)
+        filter_instance = FlaskRemoteLoggingContextFilter(get_current_user=get_circular_user)
         log_record = logging.LogRecord(
             name="test",
             level=logging.INFO,
@@ -266,14 +266,14 @@ class TestPerformanceAndEdgeCases:
 
     def test_request_id_generation_uniqueness(self, app):
         """Test that generated request IDs are unique."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
         request_ids = set()
 
         for _ in range(100):
             with app.test_request_context("/test"):
                 # Reset the internal request ID to force regeneration
-                filter_instance._GraylogContextFilter__request_id = None
-                filter_instance._GraylogContextFilter__request = None
+                filter_instance._FlaskRemoteLoggingContextFilter__request_id = None
+                filter_instance._FlaskRemoteLoggingContextFilter__request = None
 
                 request_id = filter_instance.request_id
                 request_ids.add(request_id)
@@ -283,7 +283,7 @@ class TestPerformanceAndEdgeCases:
 
     def test_parameter_filtering_edge_cases(self):
         """Test parameter filtering with edge cases."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         edge_case_params = {
             "": "empty_key",  # Empty key
@@ -293,7 +293,7 @@ class TestPerformanceAndEdgeCases:
             "nested[password]": "secret",  # Nested-style parameter
         }
 
-        filtered = filter_instance._GraylogContextFilter__filter_param_fields(edge_case_params)
+        filtered = filter_instance._FlaskRemoteLoggingContextFilter__filter_param_fields(edge_case_params)
 
         # Should handle all edge cases without crashing
         assert isinstance(filtered, dict)
@@ -302,7 +302,7 @@ class TestPerformanceAndEdgeCases:
 
     def test_ip_address_extraction_edge_cases(self, app):
         """Test IP address extraction with various edge cases."""
-        filter_instance = GraylogContextFilter()
+        filter_instance = FlaskRemoteLoggingContextFilter()
 
         edge_case_headers = [
             {},  # No headers
@@ -314,6 +314,6 @@ class TestPerformanceAndEdgeCases:
         for headers in edge_case_headers:
             with app.test_request_context("/test", headers=headers):
                 # Should not crash
-                ip = filter_instance._GraylogContextFilter__get_ip_address()
+                ip = filter_instance._FlaskRemoteLoggingContextFilter__get_ip_address()
                 # Should return some value or None
                 assert ip is None or isinstance(ip, str)

@@ -1,0 +1,7 @@
+# Multi-Backend Logging Flask Example Requirements
+flask>=1.0.0
+# Install all backends for complete multi-backend support
+flask-network-logging[all]
+
+# Alternative: Install only the backends you need
+# flask-network-logging[graylog,aws,gcp,azure,ibm,oci]

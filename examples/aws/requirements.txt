@@ -1,0 +1,3 @@
+# AWS CloudWatch Logs Flask Example Requirements
+flask>=1.0.0
+flask-network-logging[aws]

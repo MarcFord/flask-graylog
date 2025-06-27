@@ -97,6 +97,7 @@ class TestGCPLogExtension:
             "GCP_APP_NAME": "test_app",  # From the test app fixture
             "GCP_SERVICE_NAME": "test_app",
             "GCP_ENVIRONMENT": "production",
+            "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE": None,
         }
 
         assert config == expected_config
@@ -130,16 +131,19 @@ class TestGCPLogExtension:
             "GCP_APP_NAME": "custom-app",
             "GCP_SERVICE_NAME": "custom-service",
             "GCP_ENVIRONMENT": "staging",
+            "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE": None,
         }
 
         assert config == expected_config
 
     def test_setup_logging_without_app(self):
-        """Test _setup_logging raises error without app."""
+        """Test _setup_logging handles no app gracefully."""
         extension = GCPLogExtension()
-
-        with pytest.raises(RuntimeError, match="GCPLogExtension must be initialized with a Flask app"):
-            extension._setup_logging()
+        
+        # Should not raise an error, just return early
+        extension._setup_logging()
+        # Verify that logging setup was not performed
+        assert not extension._logging_setup
 
     @patch("flask_network_logging.gcp_extension.CloudLoggingHandler")
     @patch("flask_network_logging.gcp_extension.cloud_logging")
@@ -153,6 +157,7 @@ class TestGCPLogExtension:
         mock_client = MagicMock()
         mock_cloud_logging.Client.return_value = mock_client
         mock_handler = MagicMock()
+        mock_handler.level = logging.INFO  # Set proper level for handler
         mock_handler_class.return_value = mock_handler
 
         extension = GCPLogExtension()
@@ -201,6 +206,7 @@ class TestGCPLogExtension:
         # Configure app for production environment
         app.env = "production"
         app.config["GCP_ENVIRONMENT"] = "production"
+        app.config["GCP_PROJECT_ID"] = "test-project"  # Need this for _init_backend to run
 
         # Make Cloud Logging client creation fail
         mock_cloud_logging.Client.side_effect = Exception("GCP authentication failed")

@@ -121,10 +121,10 @@ class TestGraylogExtension:
         """Test logging setup when environment matches Graylog environment."""
         app.env = "test"  # Matches GRAYLOG_ENVIRONMENT in conftest.py
         mock_handler = Mock()
+        mock_handler.level = logging.INFO  # Set proper level attribute
         mock_handler_class.return_value = mock_handler
 
         extension = GraylogExtension(app=app)
-        extension._setup_logging()
 
         # Verify GelfTcpHandler was created with correct parameters
         mock_handler_class.assert_called_once_with(
@@ -152,11 +152,14 @@ class TestGraylogExtension:
             mock_logger.addHandler.assert_called()
 
     def test_setup_logging_without_app(self):
-        """Test logging setup without Flask app raises error."""
+        """Test logging setup without Flask app returns gracefully."""
         extension = GraylogExtension()
 
-        with pytest.raises(RuntimeError, match="GraylogExtension must be initialized with a Flask app"):
-            extension._setup_logging()
+        # Should not raise an error, just return without setup
+        extension._setup_logging()
+        
+        # Verify no setup was done
+        assert not extension._logging_setup
 
     def test_setup_logging_with_additional_logs(self, app, mock_logger):
         """Test logging setup with additional loggers."""

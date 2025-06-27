@@ -1,5 +1,11 @@
+"""
+GCP Cloud Logging extension for Flask applications.
+
+This module provides a Flask extension for sending logs to Google Cloud Logging.
+"""
+
 import logging
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, Optional
 
 from flask import Flask
 
@@ -10,11 +16,10 @@ except ImportError:
     cloud_logging = None
     CloudLoggingHandler = None
 
-from .context_filter import GraylogContextFilter
-from .middleware import setup_middleware
+from .base_extension import BaseLoggingExtension
 
 
-class GCPLogExtension:
+class GCPLogExtension(BaseLoggingExtension):
     """
     Flask extension for integrating with Google Cloud Logging.
 
@@ -26,170 +31,45 @@ class GCPLogExtension:
         self,
         app: Optional[Flask] = None,
         get_current_user: Optional[Callable] = None,
-        context_filter: Optional[logging.Filter] = None,
-        log_formatter: Optional[logging.Formatter] = None,
         log_level: int = logging.INFO,
         additional_logs: Optional[list[str]] = None,
+        context_filter: Optional[logging.Filter] = None,
+        log_formatter: Optional[logging.Formatter] = None,
         enable_middleware: bool = True,
     ):
-        self.context_filter: Optional[logging.Filter] = context_filter
-        self.log_formatter: Optional[logging.Formatter] = log_formatter
-        self.log_level: int = log_level
-        self.additional_logs: Optional[list[str]] = additional_logs
-        self.app: Optional[Flask] = None
-        self.get_current_user: Optional[Callable] = get_current_user
-        self.enable_middleware: bool = enable_middleware
-        self.config: dict[str, Any] = {}
-        self.cloud_logging_client: Optional[cloud_logging.Client] = None
-        self._logging_setup: bool = False
-
-        if app is not None:
-            self.init_app(
-                app,
-                get_current_user=get_current_user,
-                context_filter=context_filter,
-                log_formatter=log_formatter,
-                log_level=log_level,
-                additional_logs=additional_logs,
-            )
-
-    def init_app(
-        self,
-        app: Flask,
-        get_current_user: Optional[Callable] = None,
-        context_filter: Optional[logging.Filter] = None,
-        log_formatter: Optional[logging.Formatter] = None,
-        log_level: int = logging.INFO,
-        additional_logs: Optional[list[str]] = None,
-        enable_middleware: bool = True,
-    ) -> None:
         """
-        Initialize the extension with the given Flask application.
+        Initialize the GCP logging extension.
 
-        :param app: The Flask application instance.
+        Args:
+            app: Flask application instance
+            get_current_user: Function to retrieve current user information
+            log_level: Logging level (default: INFO)
+            additional_logs: List of additional logger names to configure
+            context_filter: Custom logging filter
+            log_formatter: Custom log formatter
+            enable_middleware: Whether to enable request/response middleware
         """
-        self.app = app
-        # Update instance attributes if provided
-        if get_current_user:
-            self.get_current_user = get_current_user
-        if additional_logs:
-            self.additional_logs = additional_logs
-        if log_level != logging.INFO:  # Only update if explicitly changed from default
-            self.log_level = log_level
-        if log_formatter:
-            self.log_formatter = log_formatter
-        self.enable_middleware = enable_middleware
+        # GCP-specific attributes
+        self.cloud_logging_client = None
+        self._original_log_level = log_level  # Store the original parameter
+        
+        # Call parent constructor
+        super().__init__(
+            app=app,
+            get_current_user=get_current_user,
+            log_level=log_level,
+            additional_logs=additional_logs,
+            context_filter=context_filter,
+            log_formatter=log_formatter,
+            enable_middleware=enable_middleware,
+        )
 
-        # Additional initialization logic can be added here.
-        self.config = self._get_config_from_app()
-        if not self.context_filter and not context_filter:
-            self.context_filter = GraylogContextFilter(get_current_user=get_current_user or self.get_current_user)
-        elif context_filter:
-            self.context_filter = context_filter
-
-        if not log_formatter and not self.log_formatter:
-            self.log_formatter = logging.Formatter(
-                "%(asctime)s - %(name)s - %(levelname)s - %(hostname)s: %(message)s "
-                "[in %(pathname)s:%(lineno)d]"
-                "params: %(get_params)s"
-            )
-        elif log_formatter:
-            self.log_formatter = log_formatter
-
-        # Apply log_level parameter if provided, otherwise use config or default
-        if log_level != logging.INFO:  # If explicitly set to non-default
-            self.log_level = log_level
-        else:
-            self.log_level = self.config.get("GCP_LOG_LEVEL", self.log_level)
-
-        # Set up logging and middleware
-        self._setup_logging()
-
-    def _setup_logging(self) -> None:
+    def _get_config_from_app(self) -> Dict[str, Any]:
         """
-        Configures logging for the Flask application based on the provided configuration.
-
-        If the application's environment matches the configured GCP environment,
-        sets up a Cloud Logging handler for logging to Google Cloud Logging. Otherwise, uses a standard
-        stream handler with the specified log formatter.
-
-        The log handler's level is set according to the configured log level. If a context
-        filter is provided, it is added to the log handler and any additional loggers.
-
-        The handler is attached to the Flask app's logger and to any additional loggers
-        specified in the configuration.
-
-        Raises:
-            RuntimeError: If the extension is not initialized with a Flask app.
-        """
-        if not self.app:
-            raise RuntimeError("GCPLogExtension must be initialized with a Flask app.")
-
-        # Prevent duplicate setup
-        if self._logging_setup:
-            return
-
-        self._logging_setup = True
-
-        if str(self.app.env).lower() == self.config.get("GCP_ENVIRONMENT", "production").lower():
-            if cloud_logging is None or CloudLoggingHandler is None:
-                raise ImportError(
-                    "google-cloud-logging is required for Google Cloud Logging support. "
-                    "Install it with: pip install flask-network-logging[gcp]"
-                )
-
-            try:
-                # Initialize Cloud Logging client
-                self.cloud_logging_client = cloud_logging.Client(
-                    project=self.config.get("GCP_PROJECT_ID"),
-                    credentials=None if not self.config.get("GCP_CREDENTIALS_PATH") else None,
-                )
-
-                # Create Cloud Logging handler
-                log_handler = CloudLoggingHandler(
-                    self.cloud_logging_client,
-                    name=self.config["GCP_LOG_NAME"],
-                    labels={
-                        "service_name": self.config["GCP_SERVICE_NAME"],
-                        "app_name": self.config["GCP_APP_NAME"],
-                        "environment": self.config["GCP_ENVIRONMENT"],
-                    },
-                )
-            except Exception as e:
-                # Fallback to stream handler if GCP setup fails
-                print(f"Warning: Failed to setup Google Cloud Logging: {e}")
-                log_handler = logging.StreamHandler()
-                log_handler.setFormatter(self.log_formatter)
-        else:
-            log_handler = logging.StreamHandler()
-            log_handler.setFormatter(self.log_formatter)
-
-        log_handler.setLevel(self.log_level)
-
-        if self.context_filter:
-            log_handler.addFilter(self.context_filter)
-
-        self.app.logger.addHandler(log_handler)
-        # Set the logger level to ensure it passes messages to our handler
-        self.app.logger.setLevel(self.log_level)
-
-        if self.additional_logs:
-            for log_name in self.additional_logs:
-                additional_logger = logging.getLogger(log_name)
-                additional_logger.setLevel(self.log_level)
-                additional_logger.addHandler(log_handler)
-                if self.context_filter:
-                    additional_logger.addFilter(self.context_filter)
-
-        # Set up middleware if enabled
-        if self.enable_middleware:
-            setup_middleware(self.app)
-
-    def _get_config_from_app(self) -> dict[str, Any]:
-        """
-        Retrieve configuration settings from the Flask application.
-
-        :return: A dictionary of configuration settings.
+        Extract configuration from the Flask application.
+        
+        Returns:
+            Dictionary containing the extension's configuration
         """
         if not self.app:
             raise RuntimeError("GCPLogExtension must be initialized with a Flask app.")
@@ -204,4 +84,107 @@ class GCPLogExtension:
             "GCP_APP_NAME": app_name,
             "GCP_SERVICE_NAME": self.app.config.get("GCP_SERVICE_NAME", app_name),
             "GCP_ENVIRONMENT": self.app.config.get("GCP_ENVIRONMENT", "production"),
+            "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get("FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE"),
         }
+
+    def _init_backend(self) -> None:
+        """
+        Initialize the GCP Cloud Logging backend.
+        """
+        if cloud_logging and self.config.get("GCP_PROJECT_ID"):
+            try:
+                self.cloud_logging_client = cloud_logging.Client(
+                    project=self.config.get("GCP_PROJECT_ID"),
+                    credentials=None if not self.config.get("GCP_CREDENTIALS_PATH") else None,
+                )
+            except Exception as e:
+                if self.app:
+                    print(f"Warning: Failed to setup Google Cloud Logging: {e}")  # Print warning for test compatibility
+
+    def _create_log_handler(self) -> Optional[logging.Handler]:
+        """
+        Create the appropriate log handler for GCP Cloud Logging.
+        
+        Returns:
+            A logging.Handler instance configured for GCP Cloud Logging,
+            or None if setup should be skipped
+        """
+        # Check if we should use GCP Cloud Logging
+        if (self.cloud_logging_client and 
+            CloudLoggingHandler and 
+            self.app and
+            str(self.app.env).lower() == self.config.get("GCP_ENVIRONMENT", "production").lower()):
+            
+            try:
+                # Create GCP Cloud Logging handler
+                return CloudLoggingHandler(
+                    self.cloud_logging_client,
+                    name=self.config.get("GCP_LOG_NAME", "flask-app"),
+                    labels={
+                        "service_name": self.config.get("GCP_SERVICE_NAME", getattr(self.app, 'name', 'flask-app')),
+                        "app_name": self.config.get("GCP_APP_NAME", getattr(self.app, 'name', 'flask-app')),
+                        "environment": self.config.get("GCP_ENVIRONMENT", "production"),
+                    },
+                )
+            except Exception as e:
+                # Fallback to stream handler if GCP setup fails
+                if self.app:
+                    print(f"Warning: Failed to setup Google Cloud Logging: {e}")  # Print warning for test compatibility
+                
+        # Use stream handler as fallback
+        handler = logging.StreamHandler()
+        if self.log_formatter:
+            handler.setFormatter(self.log_formatter)
+        return handler
+
+    def _should_skip_setup(self) -> bool:
+        """
+        Determine if logging setup should be skipped based on environment or config.
+        
+        Returns:
+            True if setup should be skipped, False otherwise
+        """
+        # Only skip if GCP is explicitly not configured and environment doesn't match
+        environment = self.config.get("GCP_ENVIRONMENT", "production")
+        if not self.config.get("GCP_PROJECT_ID") and self.app:
+            return str(self.app.env).lower() != environment.lower()
+        return False
+
+    def _get_extension_name(self) -> str:
+        """
+        Get the display name of the extension for logging purposes.
+        
+        Returns:
+            String name of the extension
+        """
+        return "GCP Cloud Logging"
+
+    def _get_middleware_config_key(self) -> str:
+        """
+        Get the configuration key used to override middleware settings.
+        
+        Returns:
+            Configuration key name for middleware override
+        """
+        return "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE"
+
+    def _get_skip_reason(self) -> str:
+        """Get the reason why setup is being skipped."""
+        environment = self.config.get("GCP_ENVIRONMENT", "production")
+        return f"Skipping setup in {environment} environment"
+
+    def init_app(self, app: Flask) -> None:
+        """
+        Initialize the extension with a Flask application.
+        
+        Args:
+            app: Flask application instance
+        """
+        # Call parent init_app first
+        super().init_app(app)
+        
+        # Override log level with GCP-specific config if using default parameter
+        if self._original_log_level == logging.INFO:  # Only if parameter was default
+            gcp_log_level = self.config.get("GCP_LOG_LEVEL")
+            if gcp_log_level is not None:
+                self.log_level = gcp_log_level

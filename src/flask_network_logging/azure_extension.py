@@ -20,12 +20,12 @@ try:
 except ImportError:
     requests = None
 
-from .context_filter import GraylogContextFilter
-from .middleware import setup_middleware
-from .middleware import setup_middleware
+from flask import Flask
+
+from .base_extension import BaseLoggingExtension
 
 
-class AzureLogExtension:
+class AzureLogExtension(BaseLoggingExtension):
     """
     Flask extension for sending logs to Azure Monitor Logs (Azure Log Analytics).
 
@@ -64,7 +64,7 @@ class AzureLogExtension:
 
     def __init__(
         self,
-        app=None,
+        app: Optional[Flask] = None,
         get_current_user: Optional[Callable] = None,
         log_level: int = logging.INFO,
         additional_logs: Optional[List[str]] = None,
@@ -84,41 +84,28 @@ class AzureLogExtension:
             log_formatter: Custom log formatter
             enable_middleware: Whether to enable request/response middleware (default: True)
         """
-        self.app = app
-        self.get_current_user = get_current_user
-        self.log_level = log_level
-        self.additional_logs = additional_logs or []
-        self.context_filter = context_filter
-        self.log_formatter = log_formatter
-        self.enable_middleware = enable_middleware
-        self.config: dict[str, Any] = {}
+        # Azure-specific attributes
         self.workspace_id = None
         self.workspace_key = None
         self.log_type = None
-        self._logging_setup: bool = False
+        
+        # Call parent constructor
+        super().__init__(
+            app=app,
+            get_current_user=get_current_user,
+            log_level=log_level,
+            additional_logs=additional_logs,
+            context_filter=context_filter,
+            log_formatter=log_formatter,
+            enable_middleware=enable_middleware,
+        )
+        
+        # Azure extension expects additional_logs to be [] if None
+        if self.additional_logs is None:
+            self.additional_logs = []
 
-        if app is not None:
-            self.init_app(app)
-
-    def init_app(self, app):
-        """
-        Initialize the extension with a Flask application.
-
-        Args:
-            app: Flask application instance
-        """
-        self.app = app
-        self.config = self._get_config_from_app()
-
-        # Initialize Azure Monitor configuration
-        try:
-            self._init_azure_config()
-        except Exception as e:
-            app.logger.warning(f"Failed to initialize Azure Monitor configuration: {e}")
-
-        # Set up logging and middleware
-        self._setup_logging()
-
+    # Abstract method implementations
+    
     def _get_config_from_app(self) -> Dict[str, Any]:
         """
         Extract Azure Monitor configuration from Flask app config.
@@ -134,11 +121,60 @@ class AzureLogExtension:
             "AZURE_WORKSPACE_KEY": self.app.config.get("AZURE_WORKSPACE_KEY", os.getenv("AZURE_WORKSPACE_KEY")),
             "AZURE_LOG_TYPE": self.app.config.get("AZURE_LOG_TYPE", os.getenv("AZURE_LOG_TYPE", "FlaskAppLogs")),
             "AZURE_LOG_LEVEL": self.app.config.get("AZURE_LOG_LEVEL", os.getenv("AZURE_LOG_LEVEL", "INFO")),
-            "AZURE_ENVIRONMENT": self.app.config.get(
-                "AZURE_ENVIRONMENT", os.getenv("AZURE_ENVIRONMENT", "development")
-            ),
+            "AZURE_ENVIRONMENT": self.app.config.get("AZURE_ENVIRONMENT", os.getenv("AZURE_ENVIRONMENT", "development")),
             "AZURE_TIMEOUT": self.app.config.get("AZURE_TIMEOUT", os.getenv("AZURE_TIMEOUT", "30")),
+            "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get("FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE", None),
         }
+
+    def _init_backend(self) -> None:
+        """Initialize the Azure Monitor backend."""
+        try:
+            self._init_azure_config()
+        except Exception as e:
+            if self.app:
+                self.app.logger.warning(f"Failed to initialize Azure Monitor configuration: {e}")
+
+    def _create_log_handler(self) -> Optional[logging.Handler]:
+        """Create the appropriate log handler for Azure Monitor."""
+        # Only set up Azure logging in Azure environments or when explicitly configured
+        environment = self.config.get("AZURE_ENVIRONMENT", "development")
+        
+        if environment in ["azure", "production"] or self.config.get("AZURE_WORKSPACE_ID"):
+            if self.workspace_id and self.workspace_key:
+                # Create Azure Monitor handler
+                handler = AzureMonitorHandler(
+                    workspace_id=self.workspace_id,
+                    workspace_key=self.workspace_key,
+                    log_type=self.log_type or "FlaskAppLogs",
+                )
+                return handler
+            else:
+                # Fallback to stream handler if Azure not properly configured
+                return logging.StreamHandler()
+        else:
+            # Return None to skip setup
+            return None
+
+    def _should_skip_setup(self) -> bool:
+        """Determine if setup should be skipped based on environment."""
+        environment = self.config.get("AZURE_ENVIRONMENT", "development")
+        return (environment not in ["azure", "production"] and 
+                not self.config.get("AZURE_WORKSPACE_ID"))
+
+    def _get_extension_name(self) -> str:
+        """Get the display name of the extension."""
+        return "Azure Monitor Logs"
+
+    def _get_middleware_config_key(self) -> str:
+        """Get the configuration key for middleware override."""
+        return "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE"
+
+    def _get_skip_reason(self) -> str:
+        """Get the reason why setup is being skipped."""
+        environment = self.config.get("AZURE_ENVIRONMENT", "development")
+        return f"Skipping setup in {environment} environment"
+
+    # Azure-specific helper methods
 
     def _init_azure_config(self):
         """Initialize Azure Monitor configuration."""
@@ -156,103 +192,7 @@ class AzureLogExtension:
             if self.app:
                 self.app.logger.warning("Azure Monitor Logs: Missing workspace ID or key")
 
-    def _setup_logging(self):
-        """
-        Set up logging configuration for Azure Monitor Logs.
 
-        This method configures the Flask application's logging to send logs to
-        Azure Monitor Logs when in appropriate environments.
-        """
-        if not self.app:
-            return
-
-        # Prevent duplicate setup
-        if self._logging_setup:
-            return
-        self._logging_setup = True
-
-        # Re-read config in case it was updated after initialization
-        self.config = self._get_config_from_app()
-
-        # Check if we should set up Azure logging
-        environment = self.config.get("AZURE_ENVIRONMENT", "development")
-
-        # Only set up Azure logging in Azure environments or when explicitly configured
-        if environment not in ["azure", "production"] and not self.config.get("AZURE_WORKSPACE_ID"):
-            if environment == "development":
-                self.app.logger.info("Azure Monitor Logs: Skipping setup in development environment")
-            return
-
-        # Create context filter if not provided
-        if not self.context_filter:
-            self.context_filter = GraylogContextFilter(get_current_user=self.get_current_user)
-
-        # Create log formatter if not provided
-        if not self.log_formatter:
-            self.log_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
-        # Set up the main application logger
-        self._configure_logger(self.app.logger, self.log_level)
-
-        # Set up additional loggers
-        for logger_name in self.additional_logs:
-            logger = logging.getLogger(logger_name)
-            self._configure_logger(logger, self.log_level)
-
-        # Set up middleware if enabled
-        if self.enable_middleware:
-            setup_middleware(self.app)
-
-        self.app.logger.info("Azure Monitor Logs extension initialized successfully")
-
-    def _configure_logger(self, logger: logging.Logger, level: int):
-        """
-        Configure a specific logger with Azure Monitor handler.
-
-        Args:
-            logger: Logger instance to configure
-            level: Log level to set
-        """
-        # Set log level
-        logger.setLevel(level)
-
-        # Create Azure Monitor handler if configuration is available
-        if self.workspace_id and self.workspace_key and self.log_type:
-            try:
-                azure_handler = AzureMonitorHandler(
-                    workspace_id=self.workspace_id,
-                    workspace_key=self.workspace_key,
-                    log_type=self.log_type,
-                    timeout=int(self.config.get("AZURE_TIMEOUT", 30)),
-                )
-                azure_handler.setLevel(level)
-                azure_handler.setFormatter(self.log_formatter)
-
-                if self.context_filter:
-                    azure_handler.addFilter(self.context_filter)
-
-                logger.addHandler(azure_handler)
-
-            except Exception as e:
-                if self.app:
-                    self.app.logger.warning(f"Failed to add Azure Monitor handler: {e}")
-
-        # Also add a stream handler for local development
-        try:
-            handlers = getattr(logger, "handlers", [])
-            has_stream_handler = any(isinstance(h, logging.StreamHandler) for h in handlers)
-        except (TypeError, AttributeError):
-            has_stream_handler = False
-
-        if not has_stream_handler:
-            stream_handler = logging.StreamHandler()
-            stream_handler.setLevel(level)
-            stream_handler.setFormatter(self.log_formatter)
-
-            if self.context_filter:
-                stream_handler.addFilter(self.context_filter)
-
-            logger.addHandler(stream_handler)
 
 
 class AzureMonitorHandler(logging.Handler):

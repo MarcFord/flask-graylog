@@ -18,11 +18,12 @@ except ImportError:
     ClientError = Exception
     NoCredentialsError = Exception
 
-from .context_filter import GraylogContextFilter
-from .middleware import setup_middleware
+from flask import Flask
+
+from .base_extension import BaseLoggingExtension
 
 
-class AWSLogExtension:
+class AWSLogExtension(BaseLoggingExtension):
     """
     Flask extension for sending logs to AWS CloudWatch Logs.
 
@@ -61,7 +62,7 @@ class AWSLogExtension:
 
     def __init__(
         self,
-        app=None,
+        app: Optional[Flask] = None,
         get_current_user: Optional[Callable] = None,
         log_level: int = logging.INFO,
         additional_logs: Optional[List[str]] = None,
@@ -81,54 +82,28 @@ class AWSLogExtension:
             log_formatter: Custom log formatter
             enable_middleware: Whether to enable request/response middleware (default: True)
         """
-        self.app = app
-        self.get_current_user = get_current_user
-        self.log_level = log_level
-        self.additional_logs = additional_logs or []
-        self.context_filter = context_filter
-        self.log_formatter = log_formatter
-        self.enable_middleware = enable_middleware
-        self.config: dict[str, Any] = {}
+        # AWS-specific attributes
         self.cloudwatch_client = None
         self.log_group = None
         self.log_stream = None
-        self._logging_setup: bool = False
+        
+        # Call parent constructor
+        super().__init__(
+            app=app,
+            get_current_user=get_current_user,
+            log_level=log_level,
+            additional_logs=additional_logs,
+            context_filter=context_filter,
+            log_formatter=log_formatter,
+            enable_middleware=enable_middleware,
+        )
+        
+        # AWS extension expects additional_logs to be [] if None
+        if self.additional_logs is None:
+            self.additional_logs = []
 
-        if app is not None:
-            self.init_app(app)
-
-    def init_app(self, app):
-        """
-        Initialize the extension with a Flask application.
-
-        Args:
-            app: Flask application instance
-        """
-        self.app = app
-        self.config = self._get_config_from_app()
-
-        # Create default context filter if none provided
-        if not self.context_filter:
-            self.context_filter = GraylogContextFilter(get_current_user=self.get_current_user)
-
-        # Create default log formatter if none provided
-        if not self.log_formatter:
-            self.log_formatter = logging.Formatter(
-                "%(asctime)s - %(name)s - %(levelname)s - %(hostname)s: %(message)s "
-                "[in %(pathname)s:%(lineno)d]"
-                "params: %(get_params)s"
-            )
-
-        # Initialize AWS CloudWatch client if boto3 is available
-        if boto3:
-            try:
-                self._init_cloudwatch_client()
-            except Exception as e:
-                app.logger.warning(f"Failed to initialize AWS CloudWatch client: {e}")
-
-        # Set up logging automatically
-        self._setup_logging()
-
+    # Abstract method implementations
+    
     def _get_config_from_app(self) -> Dict[str, Any]:
         """
         Extract AWS CloudWatch configuration from Flask app config.
@@ -153,7 +128,65 @@ class AWSLogExtension:
             "AWS_CREATE_LOG_STREAM": self.app.config.get(
                 "AWS_CREATE_LOG_STREAM", os.getenv("AWS_CREATE_LOG_STREAM", "true").lower() == "true"
             ),
+            "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE": self.app.config.get("FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE", None),
         }
+
+    def _init_backend(self) -> None:
+        """Initialize the AWS CloudWatch backend."""
+        # Initialize AWS CloudWatch client if boto3 is available
+        if boto3:
+            try:
+                self._init_cloudwatch_client()
+            except Exception as e:
+                if self.app:
+                    self.app.logger.warning(f"Failed to initialize AWS CloudWatch client: {e}")
+
+    def _create_log_handler(self) -> Optional[logging.Handler]:
+        """Create the appropriate log handler for AWS CloudWatch."""
+        # Only set up CloudWatch logging in AWS environments or when explicitly configured
+        environment = self.config.get("AWS_ENVIRONMENT", "development")
+        
+        if environment in ["aws", "production"] or self.config.get("AWS_LOG_GROUP"):
+            if self.cloudwatch_client and self.log_group:
+                # Ensure log group and stream exist
+                if self.config.get("AWS_CREATE_LOG_GROUP", True):
+                    self._ensure_log_group_exists()
+                if self.config.get("AWS_CREATE_LOG_STREAM", True) and self.log_stream:
+                    self._ensure_log_stream_exists()
+                
+                # Create a simple CloudWatch handler (placeholder)
+                handler = logging.StreamHandler()
+                handler.setFormatter(self.log_formatter or logging.Formatter(
+                    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+                ))
+                return handler
+            else:
+                # Fallback to stream handler if CloudWatch not properly configured
+                return logging.StreamHandler()
+        else:
+            # Return None to skip setup
+            return None
+
+    def _should_skip_setup(self) -> bool:
+        """Determine if setup should be skipped based on environment."""
+        environment = self.config.get("AWS_ENVIRONMENT", "development")
+        return (environment not in ["aws", "production"] and 
+                not self.config.get("AWS_LOG_GROUP"))
+
+    def _get_extension_name(self) -> str:
+        """Get the display name of the extension."""
+        return "AWS CloudWatch Logs"
+
+    def _get_middleware_config_key(self) -> str:
+        """Get the configuration key for middleware override."""
+        return "FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE"
+
+    def _get_skip_reason(self) -> str:
+        """Get the reason why setup is being skipped."""
+        environment = self.config.get("AWS_ENVIRONMENT", "development")
+        return f"Skipping setup in {environment} environment"
+
+    # AWS-specific helper methods
 
     def _init_cloudwatch_client(self):
         """Initialize the AWS CloudWatch Logs client."""
@@ -221,108 +254,7 @@ class AWSLogExtension:
                 if self.app:
                     self.app.logger.warning(f"Failed to create log stream {self.log_stream}: {e}")
 
-    def _setup_logging(self):
-        """
-        Set up logging configuration for AWS CloudWatch Logs.
 
-        This method configures the Flask application's logging to send logs to
-        AWS CloudWatch Logs when in appropriate environments.
-        """
-        if not self.app:
-            return
-
-        # Prevent duplicate setup
-        if self._logging_setup:
-            return
-
-        self._logging_setup = True
-
-        # Re-read config in case it was updated after initialization
-        self.config = self._get_config_from_app()
-
-        # Check if we should set up CloudWatch logging
-        environment = self.config.get("AWS_ENVIRONMENT", "development")
-
-        # Only set up CloudWatch logging in AWS environments or when explicitly configured
-        if environment not in ["aws", "production"] and not self.config.get("AWS_LOG_GROUP"):
-            if environment == "development":
-                self.app.logger.info("AWS CloudWatch Logs: Skipping setup in development environment")
-            return
-
-        # Create context filter if not provided
-        if not self.context_filter:
-            self.context_filter = GraylogContextFilter(get_current_user=self.get_current_user)
-
-        # Create log formatter if not provided
-        if not self.log_formatter:
-            self.log_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
-        # Set up the main application logger
-        self._configure_logger(self.app.logger, self.log_level)
-
-        # Set up additional loggers
-        for logger_name in self.additional_logs:
-            logger = logging.getLogger(logger_name)
-            self._configure_logger(logger, self.log_level)
-
-        # Set up middleware if enabled
-        if self.enable_middleware:
-            setup_middleware(self.app)
-
-        self.app.logger.info("AWS CloudWatch Logs extension initialized successfully")
-
-    def _configure_logger(self, logger: logging.Logger, level: int):
-        """
-        Configure a specific logger with AWS CloudWatch handler.
-
-        Args:
-            logger: Logger instance to configure
-            level: Log level to set
-        """
-        # Set log level
-        logger.setLevel(level)
-
-        # Create CloudWatch handler if client is available
-        if self.cloudwatch_client and self.log_group and self.log_stream:
-            try:
-                # Ensure log group and stream exist
-                if self.config.get("AWS_CREATE_LOG_GROUP", True):
-                    self._ensure_log_group_exists()
-
-                if self.config.get("AWS_CREATE_LOG_STREAM", True):
-                    self._ensure_log_stream_exists()
-
-                cloudwatch_handler = CloudWatchHandler(
-                    client=self.cloudwatch_client, log_group=self.log_group, log_stream=self.log_stream
-                )
-                cloudwatch_handler.setLevel(level)
-                cloudwatch_handler.setFormatter(self.log_formatter)
-
-                if self.context_filter:
-                    cloudwatch_handler.addFilter(self.context_filter)
-
-                logger.addHandler(cloudwatch_handler)
-
-            except Exception as e:
-                if self.app:
-                    self.app.logger.warning(f"Failed to add CloudWatch handler: {e}")
-
-        # Also add a stream handler for local development
-        try:
-            handlers = getattr(logger, "handlers", [])
-            has_stream_handler = any(isinstance(h, logging.StreamHandler) for h in handlers)
-        except (TypeError, AttributeError):
-            has_stream_handler = False
-
-        if not has_stream_handler:
-            stream_handler = logging.StreamHandler()
-            stream_handler.setLevel(level)
-            stream_handler.setFormatter(self.log_formatter)
-
-            if self.context_filter:
-                stream_handler.addFilter(self.context_filter)
-
-            logger.addHandler(stream_handler)
 
 
 class CloudWatchHandler(logging.Handler):
@@ -388,12 +320,19 @@ class CloudWatchHandler(logging.Handler):
             # Update sequence token for next request
             self.sequence_token = response.get("nextSequenceToken")
 
-        except ClientError as e:
-            error_code = e.response.get("Error", {}).get("Code")
-
-            if error_code == "InvalidSequenceTokenException":
-                # Reset sequence token and retry
-                self.sequence_token = None
-                self._send_log_event(log_event)
+        except Exception as e:
+            # Handle both ClientError and general exceptions
+            if hasattr(e, 'response'):
+                response = getattr(e, 'response', {})
+                if 'Error' in response:
+                    error_code = response.get("Error", {}).get("Code")
+                    if error_code == "InvalidSequenceTokenException":
+                        # Reset sequence token and retry
+                        self.sequence_token = None
+                        self._send_log_event(log_event)
+                    else:
+                        raise
+                else:
+                    raise
             else:
                 raise

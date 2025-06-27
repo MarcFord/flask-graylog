@@ -11,7 +11,7 @@ import logging
 import os
 import socket
 import time
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 try:
     import requests
@@ -121,11 +121,6 @@ class IBMLogExtension(BaseLoggingExtension):
         self.hostname = self.config.get("IBM_HOSTNAME", socket.gethostname())
         self.app_name = self.config.get("IBM_APP_NAME", "flask-app")
 
-    def _init_ibm_config(self) -> None:
-        """Initialize IBM-specific configuration (for backward compatibility)."""
-        # This method is expected by tests but is essentially the same as _init_backend
-        self._init_backend()
-
     def _create_log_handler(self) -> Optional[logging.Handler]:
         """Create the appropriate log handler for IBM Cloud Logs."""
         if not self.ingestion_key:
@@ -171,19 +166,6 @@ class IBMLogExtension(BaseLoggingExtension):
         environment = self.config.get("IBM_ENVIRONMENT", "production")
         return f"Skipping setup in {environment} environment"
 
-    def _configure_logger(self, logger: logging.Logger, level: int) -> None:
-        """
-        Configure a logger with IBM Cloud Logs handler.
-        
-        This method is expected by tests for backward compatibility.
-        """
-        logger.setLevel(level)
-        
-        # Create and add handler
-        handler = self._create_log_handler()
-        if handler:
-            logger.addHandler(handler)
-
 
 class IBMCloudLogHandler(logging.Handler):
     """
@@ -201,7 +183,7 @@ class IBMCloudLogHandler(logging.Handler):
         url: str = "https://logs.us-south.logging.cloud.ibm.com/logs/ingest",
         mac: Optional[str] = None,
         ip: Optional[str] = None,
-        tags: Union[str, List[str]] = "",
+        tags: str = "",
         timeout: int = 30,
         level: int = logging.NOTSET,
     ):
@@ -215,7 +197,7 @@ class IBMCloudLogHandler(logging.Handler):
             url: IBM Cloud Logs ingestion URL
             mac: MAC address (optional)
             ip: IP address (optional)
-            tags: Comma-separated tags string or list of tags (optional)
+            tags: Comma-separated tags (optional)
             timeout: Request timeout in seconds
             level: Logging level
         """
@@ -233,35 +215,8 @@ class IBMCloudLogHandler(logging.Handler):
         self.url = url
         self.mac = mac
         self.ip = ip
+        self.tags = tags.split(",") if tags else []
         self.timeout = timeout
-        
-        # Handle tags parameter (can be string or list)
-        if isinstance(tags, list):
-            self.tags = tags
-        else:
-            self.tags = tags.split(",") if tags else []
-        
-        # Add env attribute for backward compatibility
-        self.env = "development"
-
-    def _map_log_level(self, level_name: str) -> str:
-        """
-        Map Python log level names to IBM Cloud Logs level names.
-        
-        Args:
-            level_name: Python log level name (e.g., 'DEBUG', 'INFO')
-            
-        Returns:
-            IBM Cloud Logs level name
-        """
-        level_mapping = {
-            "DEBUG": "Debug",
-            "INFO": "Info", 
-            "WARNING": "Warn",
-            "ERROR": "Error",
-            "CRITICAL": "Fatal"
-        }
-        return level_mapping.get(level_name, "Info")
 
     def emit(self, record: logging.LogRecord) -> None:
         """
@@ -274,27 +229,6 @@ class IBMCloudLogHandler(logging.Handler):
             # Format the log record
             log_entry = self.format(record)
             
-            # Extract extra fields from the log record
-            meta = {
-                "hostname": self.hostname,
-                "logger": record.name,
-                "filename": record.filename,
-                "lineno": record.lineno,
-                "funcName": record.funcName,
-            }
-            
-            # Add any extra fields from the record
-            reserved_attrs = {
-                'name', 'msg', 'args', 'levelname', 'levelno', 'pathname', 'filename',
-                'module', 'exc_info', 'exc_text', 'stack_info', 'lineno', 'funcName',
-                'created', 'msecs', 'relativeCreated', 'thread', 'threadName',
-                'processName', 'process', 'getMessage', 'task', 'asctime'
-            }
-            
-            for key, value in record.__dict__.items():
-                if key not in reserved_attrs:
-                    meta[key] = value
-            
             # Create the payload for IBM Cloud Logs
             payload = {
                 "lines": [
@@ -302,8 +236,14 @@ class IBMCloudLogHandler(logging.Handler):
                         "timestamp": int(record.created * 1000),  # Convert to milliseconds
                         "line": log_entry,
                         "app": self.app_name,
-                        "level": self._map_log_level(record.levelname),
-                        "meta": meta,
+                        "level": record.levelname,
+                        "meta": {
+                            "hostname": self.hostname,
+                            "logger": record.name,
+                            "filename": record.filename,
+                            "lineno": record.lineno,
+                            "funcName": record.funcName,
+                        },
                     }
                 ]
             }
@@ -314,22 +254,6 @@ class IBMCloudLogHandler(logging.Handler):
         except Exception:
             # Don't let logging errors break the application
             self.handleError(record)
-
-    def _send_log_data(self, payload: Dict[str, Any]) -> None:
-        """
-        Send log data to IBM Cloud Logs API (alternative method for tests).
-        
-        Args:
-            payload: The log payload to send
-            
-        Raises:
-            ImportError: If requests library is not available
-            Exception: If the API request fails
-        """
-        if requests is None:
-            raise ImportError("requests library is required for IBM Cloud Logs integration")
-        
-        self._send_to_ibm_logs(payload)
 
     def _send_to_ibm_logs(self, payload: Dict[str, Any]) -> None:
         """

@@ -64,14 +64,17 @@ class TestIBMLogExtension:
         assert config == {}
 
     @patch("flask_network_logging.ibm_extension.requests", None)
+    @patch("flask_network_logging.ibm_extension.requests", None)
     def test_init_ibm_config_without_requests(self):
         """Test IBM config initialization without requests library."""
         extension = IBMLogExtension(self.app)
+        extension.ingestion_key = "test-key"  # Set a key so handler creation is attempted
 
-        with pytest.raises(ImportError) as exc_info:
-            extension._init_ibm_config()
+        # The error should occur when creating the handler
+        with pytest.raises(RuntimeError) as exc_info:
+            IBMCloudLogHandler(ingestion_key="test-key")
 
-        assert "requests is required" in str(exc_info.value)
+        assert "requests library is required" in str(exc_info.value)
 
     def test_init_ibm_config_missing_key(self):
         """Test IBM config initialization with missing ingestion key."""
@@ -85,10 +88,13 @@ class TestIBMLogExtension:
     @patch("flask_network_logging.ibm_extension.requests")
     def test_setup_logging(self, mock_requests):
         """Test logging setup."""
-        with patch.object(IBMLogExtension, "_configure_logger") as mock_configure:
+        with patch.object(IBMLogExtension, "_create_log_handler") as mock_create_handler:
+            mock_handler = Mock()
+            mock_handler.level = logging.INFO  # Set proper level attribute
+            mock_create_handler.return_value = mock_handler
             extension = IBMLogExtension(self.app)
             # Setup happens automatically during init
-            mock_configure.assert_called()
+            mock_create_handler.assert_called()
 
     @patch("flask_network_logging.ibm_extension.requests")
     def test_setup_logging_development_env(self, mock_requests):
@@ -98,9 +104,12 @@ class TestIBMLogExtension:
 
         extension = IBMLogExtension(self.app)
 
-        with patch.object(extension, "_configure_logger") as mock_configure:
+        with patch.object(extension, "_create_log_handler") as mock_create_handler:
+            mock_handler = Mock()
+            mock_handler.level = logging.INFO  # Set proper level attribute
+            mock_create_handler.return_value = mock_handler
             extension._setup_logging()
-            mock_configure.assert_not_called()
+            mock_create_handler.assert_not_called()  # Should be skipped due to environment
 
     @patch("flask_network_logging.ibm_extension.requests")
     def test_configure_logger_with_handler(self, mock_requests):
@@ -255,7 +264,7 @@ class TestIBMCloudLogHandler:
         call_args = mock_requests.post.call_args
 
         # Check URL and auth
-        assert call_args[0][0] == "https://logs.logdna.com/logs/ingest"
+        assert call_args[0][0] == "https://logs.us-south.logging.cloud.ibm.com/logs/ingest"
         assert call_args[1]["auth"] == ("test-key", "")
         assert call_args[1]["json"] == payload
 

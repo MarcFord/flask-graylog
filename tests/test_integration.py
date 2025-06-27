@@ -84,10 +84,10 @@ class TestIntegration:
 
         with patch("flask_network_logging.extension.GelfTcpHandler") as mock_handler_class:
             mock_handler = Mock()
+            mock_handler.level = logging.INFO  # Set proper level attribute
             mock_handler_class.return_value = mock_handler
 
             extension = GraylogExtension(app=app)
-            extension._setup_logging()
 
             # Verify GelfTcpHandler was used
             mock_handler_class.assert_called_once()

@@ -31,7 +31,7 @@ import uuid
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
 
-from flask_network_logging import AzureLog
+from flask_network_logging import AzureLogExtension
 
 app = Flask(__name__)
 
@@ -59,8 +59,7 @@ def get_current_user():
     }
 
 # Initialize Azure Monitor Logs extension
-azure_log = AzureLog(app, get_current_user=get_current_user)
-azure_log._setup_logging()
+azure_log = AzureLogExtension(app, get_current_user=get_current_user)
 
 @app.before_request
 def before_request():

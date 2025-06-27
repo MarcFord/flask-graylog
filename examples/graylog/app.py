@@ -29,7 +29,7 @@ import uuid
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
 
-from flask_network_logging import Graylog
+from flask_network_logging import GraylogExtension
 
 app = Flask(__name__)
 
@@ -53,8 +53,7 @@ def get_current_user():
     }
 
 # Initialize Graylog extension
-graylog = Graylog(app, get_current_user=get_current_user)
-graylog._setup_logging()
+graylog = GraylogExtension(app, get_current_user=get_current_user)
 
 @app.before_request
 def before_request():

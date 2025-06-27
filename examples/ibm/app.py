@@ -30,7 +30,7 @@ import uuid
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
 
-from flask_network_logging import IBMLog
+from flask_network_logging import IBMLogExtension
 
 app = Flask(__name__)
 
@@ -58,8 +58,7 @@ def get_current_user():
     }
 
 # Initialize IBM Cloud Logging extension
-ibm_log = IBMLog(app, get_current_user=get_current_user)
-ibm_log._setup_logging()
+ibm_log = IBMLogExtension(app, get_current_user=get_current_user)
 
 @app.before_request
 def before_request():

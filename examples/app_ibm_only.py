@@ -27,7 +27,7 @@ Optional Environment Variables:
 
 import os
 from flask import Flask, request, jsonify
-from flask_network_logging import IBMLog
+from flask_network_logging import IBMLogExtension
 
 app = Flask(__name__)
 
@@ -45,10 +45,8 @@ app.config.update({
     'IBM_INDEX_META': os.getenv('IBM_INDEX_META', 'true').lower() == 'true',
 })
 
-# Initialize IBM Cloud Logs extension
-ibm_log = IBMLog(app)
-ibm_log._setup_logging()
-
+# Initialize IBM Cloud Logs extension (logging setup is automatic)
+ibm_log = IBMLogExtension(app)
 
 @app.route('/')
 def index():
@@ -75,7 +73,6 @@ def index():
         ]
     })
 
-
 @app.route('/health')
 def health_check():
     """Health check endpoint."""
@@ -85,7 +82,6 @@ def health_check():
         'service': 'flask-ibm-logging-example',
         'logging_backend': 'IBM Cloud Logs'
     })
-
 
 @app.route('/api/users')
 def api_users():
@@ -103,7 +99,6 @@ def api_users():
     ]
     
     return jsonify({'users': users, 'count': len(users)})
-
 
 @app.route('/error')
 def trigger_error():
@@ -124,7 +119,6 @@ def trigger_error():
             'message': 'Check your IBM Cloud Logs for error details'
         }), 500
 
-
 @app.route('/debug')
 def debug_example():
     """Endpoint demonstrating debug level logging."""
@@ -142,7 +136,6 @@ def debug_example():
         'message': 'Debug logging example',
         'note': 'Debug logs may not appear unless IBM_LOG_LEVEL is set to DEBUG'
     })
-
 
 @app.route('/test-logs')
 def test_logs():
@@ -173,7 +166,6 @@ def test_logs():
         'levels_tested': ['DEBUG', 'INFO', 'WARNING', 'ERROR']
     })
 
-
 @app.route('/performance')
 def performance_test():
     """Endpoint for testing performance logging."""
@@ -203,7 +195,6 @@ def performance_test():
         'duration_seconds': round(duration, 3),
         'note': 'Performance metrics logged to IBM Cloud Logs'
     })
-
 
 if __name__ == '__main__':
     # Check if required configuration is present

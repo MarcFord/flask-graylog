@@ -1,15 +1,40 @@
-# Flask Graylog Example Application
+# Flask Network Logging Examples
 
-This directory contains a comprehensive example application demonstrating how to use the flask-graylog extension in a real Flask application.
+This directory contains comprehensive example applications demonstrating how to use the flask-network-logging extension with various logging backends in real Flask applications.
+
+## Available Examples
+
+### Single Backend Examples
+- **`app.py`** - Main Graylog example with comprehensive features
+- **`app_aws_only.py`** - AWS CloudWatch Logs only
+- **`app_azure_only.py`** - Azure Monitor Logs only  
+- **`app_gcp_only.py`** - Google Cloud Logging only
+- **`app_ibm_only.py`** - IBM Cloud Logs only
+- **`app_oci_only.py`** - Oracle Cloud Infrastructure Logging only
+
+### Multi-Backend Examples
+- **`app_dual_logging.py`** - Graylog + GCP + AWS combined
+- **`app_multi_backend.py`** - All backends (when configured)
+
+### Specialized Examples
+- **`gcp/`** - Dedicated GCP logging example with Cloud Run deployment
+- **`aws/`** - AWS-focused example with CloudFormation templates
+- **`azure/`** - Azure-specific example with ARM templates
+- **`ibm/`** - IBM Cloud specific setup
+- **`oci/`** - Oracle Cloud specific configuration
+- **`multi-backend/`** - Enterprise multi-cloud logging setup
 
 ## Features Demonstrated
 
 ### Core Functionality
-- ✅ **Graylog Integration**: Complete setup with environment-based configuration
+- ✅ **Multi-Backend Support**: Graylog, AWS CloudWatch, Azure Monitor, GCP Cloud Logging, IBM Cloud Logs, OCI Logging
+- ✅ **Automatic Setup**: Logging configuration is handled automatically on initialization
 - ✅ **Multiple Log Levels**: DEBUG, INFO, WARNING, ERROR, CRITICAL
-- ✅ **Custom Fields**: Additional context data in log messages
-- ✅ **Request Context**: Automatic logging of request/response information
+- ✅ **Custom Fields**: Additional context data in log messages  
+- ✅ **Request Context**: Automatic logging of request/response information via middleware
 - ✅ **Error Handling**: Comprehensive error logging with stack traces
+- ✅ **Environment-Based**: Production/development environment configuration
+- ✅ **Middleware Control**: Enable/disable automatic request logging
 
 ### Example Endpoints
 - `/` - Home page with API documentation
@@ -47,18 +72,78 @@ cd examples
 # Copy the example environment file
 cp .env.example .env
 
-# Edit .env with your Graylog server details
-# GRAYLOG_HOST=your-graylog-server.com
-# GRAYLOG_PORT=12201
+# Edit .env with your logging backend details
+# For Graylog:
+GRAYLOG_HOST=your-graylog-server.com
+GRAYLOG_PORT=12201
+
+# For AWS CloudWatch:
+AWS_REGION=us-east-1
+AWS_LOG_GROUP=/flask-app/logs
+
+# etc. (see individual example files for all options)
 ```
 
-### 3. Run the Application
+### 3. Choose and Run an Example
 
 ```bash
+# Basic Graylog example
 python app.py
+
+# AWS CloudWatch only  
+python app_aws_only.py
+
+# Azure Monitor only
+python app_azure_only.py
+
+# Multi-backend example
+python app_multi_backend.py
+
+# Or run with Docker Compose (Graylog + app)
+docker-compose up
 ```
 
 The application will start on `http://127.0.0.1:5000`
+
+## New Features
+
+### Automatic Setup
+Logging setup is now **automatic** when you create an extension instance. No need to call `_setup_logging()`:
+
+```python
+from flask_network_logging import GraylogExtension
+
+# Old way (no longer needed):
+# graylog = GraylogExtension(app)
+# graylog._setup_logging()
+
+# New way (automatic setup):
+graylog = GraylogExtension(app)  # That's it!
+```
+
+### Middleware Control
+You can now control whether automatic request/response middleware is enabled:
+
+```python
+# Disable automatic request logging
+graylog = GraylogExtension(app, enable_middleware=False)
+
+# Or control via configuration
+app.config['FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE'] = False
+graylog = GraylogExtension(app)
+```
+
+### Factory Pattern Support
+All extensions now support Flask's application factory pattern:
+
+```python
+graylog = GraylogExtension()  # Create without app
+
+def create_app():
+    app = Flask(__name__)
+    graylog.init_app(app)  # Initialize later
+    return app
+```
 
 ## Configuration Options
 

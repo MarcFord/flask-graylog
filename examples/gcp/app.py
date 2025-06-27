@@ -31,7 +31,7 @@ import uuid
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
 
-from flask_network_logging import GCPLog
+from flask_network_logging import GCPLogExtension
 
 app = Flask(__name__)
 
@@ -61,8 +61,7 @@ def get_current_user():
     }
 
 # Initialize Google Cloud Logging extension
-gcp_log = GCPLog(app, get_current_user=get_current_user)
-gcp_log._setup_logging()
+gcp_log = GCPLogExtension(app, get_current_user=get_current_user)
 
 @app.before_request
 def before_request():

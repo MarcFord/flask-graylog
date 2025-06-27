@@ -97,7 +97,7 @@ The core package includes only Flask and essential utilities. Backend-specific d
 
 ```python
 from flask import Flask
-from flask_network_logging import Graylog
+from flask_network_logging import GraylogExtension
 
 app = Flask(__name__)
 
@@ -109,9 +109,8 @@ app.config.update({
     'GRAYLOG_ENVIRONMENT': 'production'
 })
 
-# Initialize extension
-graylog = Graylog(app)
-graylog._setup_logging()
+# Initialize extension (logging setup is automatic)
+graylog = GraylogExtension(app)
 
 @app.route('/')
 def hello():
@@ -126,7 +125,7 @@ if __name__ == '__main__':
 
 ```python
 from flask import Flask
-from flask_network_logging import GCPLog
+from flask_network_logging import GCPLogExtension
 
 app = Flask(__name__)
 
@@ -138,9 +137,8 @@ app.config.update({
     'GCP_ENVIRONMENT': 'production'
 })
 
-# Initialize extension
-gcp_log = GCPLog(app)
-gcp_log._setup_logging()
+# Initialize extension (logging setup is automatic)
+gcp_log = GCPLogExtension(app)
 
 @app.route('/')
 def hello():
@@ -155,7 +153,7 @@ if __name__ == '__main__':
 
 ```python
 from flask import Flask
-from flask_network_logging import AWSLog
+from flask_network_logging import AWSLogExtension
 
 app = Flask(__name__)
 
@@ -168,9 +166,8 @@ app.config.update({
     'AWS_ENVIRONMENT': 'production'
 })
 
-# Initialize extension
-aws_log = AWSLog(app)
-aws_log._setup_logging()
+# Initialize extension (logging setup is automatic)
+aws_log = AWSLogExtension(app)
 
 @app.route('/')
 def hello():
@@ -185,7 +182,7 @@ if __name__ == '__main__':
 
 ```python
 from flask import Flask
-from flask_network_logging import AzureLog
+from flask_network_logging import AzureLogExtension
 
 app = Flask(__name__)
 
@@ -198,9 +195,8 @@ app.config.update({
     'AZURE_ENVIRONMENT': 'production'
 })
 
-# Initialize extension
-azure_log = AzureLog(app)
-azure_log._setup_logging()
+# Initialize extension (logging setup is automatic)
+azure_log = AzureLogExtension(app)
 
 @app.route('/')
 def hello():
@@ -215,7 +211,7 @@ if __name__ == '__main__':
 
 ```python
 from flask import Flask
-from flask_network_logging import IBMLog
+from flask_network_logging import IBMLogExtension
 
 app = Flask(__name__)
 
@@ -229,9 +225,8 @@ app.config.update({
     'IBM_ENVIRONMENT': 'production'
 })
 
-# Initialize extension
-ibm_log = IBMLog(app)
-ibm_log._setup_logging()
+# Initialize extension (logging setup is automatic)
+ibm_log = IBMLogExtension(app)
 
 @app.route('/')
 def hello():
@@ -246,7 +241,7 @@ if __name__ == '__main__':
 
 ```python
 from flask import Flask
-from flask_network_logging import OCILog
+from flask_network_logging import OCILogExtension
 
 app = Flask(__name__)
 
@@ -259,9 +254,8 @@ app.config.update({
     'OCI_ENVIRONMENT': 'production'
 })
 
-# Initialize extension
-oci_log = OCILog(app)
-oci_log._setup_logging()
+# Initialize extension (logging setup is automatic)
+oci_log = OCILogExtension(app)
 
 @app.route('/')
 def hello():
@@ -269,6 +263,73 @@ def hello():
     return "Hello, World!"
 
 if __name__ == '__main__':
+    app.run()
+```
+
+## Advanced Configuration
+
+### Middleware Control
+
+By default, all logging extensions enable request/response middleware that automatically logs HTTP requests and responses. You can disable this middleware if you prefer to handle logging manually:
+
+```python
+from flask import Flask
+from flask_network_logging import GraylogExtension
+
+app = Flask(__name__)
+app.config.update({
+    'GRAYLOG_HOST': 'your-graylog-server.com',
+    'GRAYLOG_PORT': 12201,
+})
+
+# Initialize without middleware
+graylog = GraylogExtension(app, enable_middleware=False)
+
+@app.route('/')
+def hello():
+    # Manual logging without automatic request/response logging
+    app.logger.info("Hello endpoint called manually")
+    return "Hello, World!"
+```
+
+You can also control middleware via configuration:
+
+```python
+app.config.update({
+    'GRAYLOG_HOST': 'your-graylog-server.com',
+    'GRAYLOG_PORT': 12201,
+    'FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE': False  # Disables middleware
+})
+
+# This will respect the config setting
+graylog = GraylogExtension(app)
+```
+
+### Factory Pattern Support
+
+The extensions support Flask's application factory pattern:
+
+```python
+from flask import Flask
+from flask_network_logging import GraylogExtension
+
+# Create extension instance
+graylog = GraylogExtension()
+
+def create_app():
+    app = Flask(__name__)
+    app.config.update({
+        'GRAYLOG_HOST': 'your-graylog-server.com',
+        'GRAYLOG_PORT': 12201,
+    })
+    
+    # Initialize with app
+    graylog.init_app(app)
+    
+    return app
+
+if __name__ == '__main__':
+    app = create_app()
     app.run()
 ```
 
@@ -300,6 +361,7 @@ cd examples/
 | `GRAYLOG_EXTRA_FIELDS` | True to allow extra fields, False if not | True |
 | `GRAYLOG_APP_NAME` | Name of the application sending logs | `app.name` |
 | `GRAYLOG_SERVICE_NAME` | Name of the service sending logs. Useful if you have an application that is made up of multiple services | `app.name` |
+| `FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
 
 ### Google Cloud Logging Configuration
 
@@ -312,6 +374,7 @@ cd examples/
 | `GCP_ENVIRONMENT` | Environment where logs should be sent to GCP | `production` |
 | `GCP_APP_NAME` | Name of the application sending logs | `app.name` |
 | `GCP_SERVICE_NAME` | Name of the service sending logs | `app.name` |
+| `FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
 
 ### AWS CloudWatch Logs Configuration
 
@@ -326,6 +389,7 @@ cd examples/
 | `AWS_ENVIRONMENT` | Environment where logs should be sent to AWS | `production` |
 | `AWS_APP_NAME` | Name of the application sending logs | `app.name` |
 | `AWS_SERVICE_NAME` | Name of the service sending logs | `app.name` |
+| `FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
 
 ### Azure Monitor Logs Configuration
 
@@ -337,6 +401,7 @@ cd examples/
 | `AZURE_LOG_LEVEL` | Minimum log level | `WARNING` |
 | `AZURE_ENVIRONMENT` | Environment where logs should be sent to Azure | `production` |
 | `AZURE_TIMEOUT` | HTTP request timeout in seconds | `30` |
+| `FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
 
 ### IBM Cloud Logs Configuration
 
@@ -354,6 +419,7 @@ cd examples/
 | `IBM_TIMEOUT` | HTTP request timeout in seconds | `30` |
 | `IBM_INDEX_META` | Whether metadata should be indexed/searchable | `False` |
 | `IBM_TAGS` | Comma-separated list of tags for grouping hosts | `''` |
+| `FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
 
 ### Oracle Cloud Infrastructure Logging Configuration
 
@@ -367,6 +433,7 @@ cd examples/
 | `OCI_SOURCE` | Source identifier for log entries | `flask-app` |
 | `OCI_LOG_LEVEL` | Minimum log level | `INFO` |
 | `OCI_ENVIRONMENT` | Environment where logs should be sent to OCI | `development` |
+| `FLASK_NETWORK_LOGGING_ENABLE_MIDDLEWARE` | Enable/disable automatic request/response middleware | `True` |
 
 
 ## Development

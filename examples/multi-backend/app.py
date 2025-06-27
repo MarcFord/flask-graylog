@@ -36,7 +36,7 @@ import uuid
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
 
-from flask_network_logging import GraylogExtension, AWSLog, GCPLog, AzureLog, IBMLog, OCILog
+from flask_network_logging import GraylogExtension, AWSLogExtension, GCPLogExtension, AzureLogExtension, IBMLogExtension, OCILogExtension
 
 app = Flask(__name__)
 
@@ -112,7 +112,7 @@ backend_status = {}
 if app.config.get('GRAYLOG_ENABLE') and app.config.get('GRAYLOG_HOST'):
     try:
         graylog = GraylogExtension(app, get_current_user=get_current_user)
-        graylog._setup_logging()
+
         enabled_backends.append('Graylog')
         backend_status['graylog'] = {'enabled': True, 'status': 'configured'}
     except Exception as e:
@@ -121,8 +121,8 @@ if app.config.get('GRAYLOG_ENABLE') and app.config.get('GRAYLOG_HOST'):
 # AWS CloudWatch
 if app.config.get('AWS_ENABLE') and app.config.get('AWS_LOG_GROUP'):
     try:
-        aws_log = AWSLog(app, get_current_user=get_current_user)
-        aws_log._setup_logging()
+        aws_log = AWSLogExtension(app, get_current_user=get_current_user)
+
         enabled_backends.append('AWS CloudWatch')
         backend_status['aws'] = {'enabled': True, 'status': 'configured'}
     except Exception as e:
@@ -131,8 +131,8 @@ if app.config.get('AWS_ENABLE') and app.config.get('AWS_LOG_GROUP'):
 # Google Cloud Logging
 if app.config.get('GCP_ENABLE') and app.config.get('GCP_PROJECT_ID'):
     try:
-        gcp_log = GCPLog(app, get_current_user=get_current_user)
-        gcp_log._setup_logging()
+        gcp_log = GCPLogExtension(app, get_current_user=get_current_user)
+
         enabled_backends.append('Google Cloud Logging')
         backend_status['gcp'] = {'enabled': True, 'status': 'configured'}
     except Exception as e:
@@ -141,8 +141,8 @@ if app.config.get('GCP_ENABLE') and app.config.get('GCP_PROJECT_ID'):
 # Azure Monitor Logs
 if app.config.get('AZURE_ENABLE') and app.config.get('AZURE_WORKSPACE_ID'):
     try:
-        azure_log = AzureLog(app, get_current_user=get_current_user)
-        azure_log._setup_logging()
+        azure_log = AzureLogExtension(app, get_current_user=get_current_user)
+
         enabled_backends.append('Azure Monitor Logs')
         backend_status['azure'] = {'enabled': True, 'status': 'configured'}
     except Exception as e:
@@ -151,8 +151,8 @@ if app.config.get('AZURE_ENABLE') and app.config.get('AZURE_WORKSPACE_ID'):
 # IBM Cloud Logging
 if app.config.get('IBM_ENABLE') and app.config.get('IBM_INGESTION_KEY'):
     try:
-        ibm_log = IBMLog(app, get_current_user=get_current_user)
-        ibm_log._setup_logging()
+        ibm_log = IBMLogExtension(app, get_current_user=get_current_user)
+
         enabled_backends.append('IBM Cloud Logging')
         backend_status['ibm'] = {'enabled': True, 'status': 'configured'}
     except Exception as e:
@@ -161,8 +161,8 @@ if app.config.get('IBM_ENABLE') and app.config.get('IBM_INGESTION_KEY'):
 # OCI Logging
 if app.config.get('OCI_ENABLE') and app.config.get('OCI_LOG_GROUP_ID'):
     try:
-        oci_log = OCILog(app, get_current_user=get_current_user)
-        oci_log._setup_logging()
+        oci_log = OCILogExtension(app, get_current_user=get_current_user)
+
         enabled_backends.append('OCI Logging')
         backend_status['oci'] = {'enabled': True, 'status': 'configured'}
     except Exception as e:

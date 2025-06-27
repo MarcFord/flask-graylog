@@ -13,7 +13,7 @@ Features demonstrated:
 
 import os
 from flask import Flask, jsonify, request
-from flask_network_logging import GCPLog
+from flask_network_logging import GCPLogExtension
 
 # Create Flask application
 app = Flask(__name__)
@@ -28,11 +28,9 @@ app.config.update({
 })
 
 # Initialize GCP logging extension
-gcp_log = GCPLog(app)
+gcp_log = GCPLogExtension(app)
 
 # Setup logging
-gcp_log._setup_logging()
-
 
 @app.route('/')
 def home():
@@ -45,7 +43,6 @@ def home():
         'project_id': app.config.get('GCP_PROJECT_ID', 'not_configured')
     })
 
-
 @app.route('/test-log')
 def test_log():
     """Test different log levels."""
@@ -55,7 +52,6 @@ def test_log():
     app.logger.error("Error log message")
     
     return jsonify({'message': 'Logs sent to Google Cloud Logging'})
-
 
 @app.route('/test-error')
 def test_error():
@@ -68,7 +64,6 @@ def test_error():
         return jsonify({'error': str(e)}), 500
     
     return jsonify({'message': 'No error'})
-
 
 if __name__ == '__main__':
     app.logger.info("Flask GCP Logging Example starting")

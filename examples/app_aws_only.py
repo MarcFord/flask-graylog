@@ -40,11 +40,8 @@ app.config.update({
     'AWS_CREATE_LOG_STREAM': os.getenv('AWS_CREATE_LOG_STREAM', 'true').lower() == 'true',
 })
 
-# Initialize AWS CloudWatch logging extension
+# Initialize AWS CloudWatch logging extension (logging setup is automatic)
 aws_log = AWSLogExtension(app)
-
-# Setup logging
-aws_log._setup_logging()
 
 # Sample data for demonstration
 USERS = [
@@ -59,7 +56,6 @@ PRODUCTS = [
     {'id': 3, 'name': 'Running Shoes', 'price': 89.99, 'category': 'Sports'},
 ]
 
-
 def get_current_user():
     """
     Mock function to get current user information.
@@ -73,7 +69,6 @@ def get_current_user():
         user = next((u for u in USERS if u['id'] == user_id), None)
         return user
     return None
-
 
 @app.before_request
 def before_request():
@@ -94,7 +89,6 @@ def before_request():
         }
     )
 
-
 @app.after_request
 def after_request(response):
     """Log request completion information."""
@@ -112,7 +106,6 @@ def after_request(response):
     )
     
     return response
-
 
 @app.route('/')
 def home():
@@ -138,7 +131,6 @@ def home():
         ]
     })
 
-
 @app.route('/users')
 def get_users():
     """Get all users - demonstrates INFO level logging."""
@@ -155,7 +147,6 @@ def get_users():
         'users': USERS,
         'total': len(USERS)
     })
-
 
 @app.route('/users/<int:user_id>')
 def get_user(user_id):
@@ -184,7 +175,6 @@ def get_user(user_id):
             }
         )
         return jsonify({'error': 'User not found'}), 404
-
 
 @app.route('/products')
 def get_products():
@@ -221,7 +211,6 @@ def get_products():
             'products': PRODUCTS,
             'total': len(PRODUCTS)
         })
-
 
 @app.route('/test-logs')
 def test_logs():
@@ -280,7 +269,6 @@ def test_logs():
         'log_stream': app.config.get('AWS_LOG_STREAM')
     })
 
-
 @app.route('/test-error')
 def test_error():
     """Test endpoint to demonstrate error logging with exceptions in AWS CloudWatch."""
@@ -330,7 +318,6 @@ def test_error():
     
     return jsonify({'message': 'No error occurred'})
 
-
 @app.route('/health')
 def health_check():
     """Health check endpoint."""
@@ -351,7 +338,6 @@ def health_check():
         }
     })
 
-
 @app.errorhandler(404)
 def not_found(error):
     """Handle 404 errors."""
@@ -371,7 +357,6 @@ def not_found(error):
         'method': request.method
     }), 404
 
-
 @app.errorhandler(500)
 def internal_error(error):
     """Handle 500 errors."""
@@ -390,7 +375,6 @@ def internal_error(error):
         'error': 'Internal server error',
         'message': 'An unexpected error occurred'
     }), 500
-
 
 if __name__ == '__main__':
     # Configure logging extension with user context

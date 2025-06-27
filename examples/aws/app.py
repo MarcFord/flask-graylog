@@ -33,7 +33,7 @@ import uuid
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
 
-from flask_network_logging import AWSLog
+from flask_network_logging import AWSLogExtension
 
 app = Flask(__name__)
 
@@ -63,8 +63,7 @@ def get_current_user():
     }
 
 # Initialize AWS CloudWatch Logs extension
-aws_log = AWSLog(app, get_current_user=get_current_user)
-aws_log._setup_logging()
+aws_log = AWSLogExtension(app, get_current_user=get_current_user)
 
 @app.before_request
 def before_request():

@@ -32,7 +32,7 @@ import uuid
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
 
-from flask_network_logging import OCILog
+from flask_network_logging import OCILogExtension
 
 app = Flask(__name__)
 
@@ -62,8 +62,7 @@ def get_current_user():
     }
 
 # Initialize OCI Logging extension
-oci_log = OCILog(app, get_current_user=get_current_user)
-oci_log._setup_logging()
+oci_log = OCILogExtension(app, get_current_user=get_current_user)
 
 @app.before_request
 def before_request():

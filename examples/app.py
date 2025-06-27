@@ -53,7 +53,6 @@ PRODUCTS = [
     {'id': 3, 'name': 'Keyboard', 'price': 79.99, 'stock': 25},
 ]
 
-
 @app.route('/')
 def index():
     """Home page with basic information."""
@@ -78,7 +77,6 @@ def index():
         'timestamp': datetime.utcnow().isoformat()
     })
 
-
 @app.route('/users')
 def list_users():
     """List all users."""
@@ -93,7 +91,6 @@ def list_users():
         'timestamp': datetime.utcnow().isoformat()
     })
 
-
 @app.route('/users/<int:user_id>')
 def get_user(user_id):
     """Get a specific user by ID."""
@@ -106,7 +103,6 @@ def get_user(user_id):
         app.logger.warning("User not found")
         return jsonify({'error': 'User not found'}), 404
 
-
 @app.route('/products')
 def list_products():
     """List all products."""
@@ -117,7 +113,6 @@ def list_products():
         'total': len(PRODUCTS),
         'timestamp': datetime.utcnow().isoformat()
     })
-
 
 @app.route('/products/<int:product_id>')
 def get_product(product_id):
@@ -130,7 +125,6 @@ def get_product(product_id):
     else:
         app.logger.warning("Product not found")
         return jsonify({'error': 'Product not found'}), 404
-
 
 @app.route('/log-test')
 def log_test():
@@ -154,7 +148,6 @@ def log_test():
         'levels_tested': ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
         'note': 'Check your Graylog server for the log messages'
     })
-
 
 @app.route('/simulate-error')
 def simulate_error():
@@ -186,7 +179,6 @@ def simulate_error():
             'message': str(e)
         }), 500
 
-
 @app.route('/health')
 def health_check():
     """Health check endpoint."""
@@ -200,7 +192,6 @@ def health_check():
         'environment': app.config.get('GRAYLOG_ENVIRONMENT', 'unknown')
     })
 
-
 @app.before_request
 def before_request():
     """Log request information before processing."""
@@ -211,7 +202,6 @@ def before_request():
     g.request_uuid = request_uuid
 
     app.logger.debug("Request received")
-
 
 @app.errorhandler(404)
 def not_found(error):
@@ -224,7 +214,6 @@ def not_found(error):
         'status_code': 404
     }), 404
 
-
 @app.errorhandler(500)
 def internal_error(error):
     """Handle 500 errors."""
@@ -235,7 +224,6 @@ def internal_error(error):
         'message': 'An unexpected error occurred',
         'status_code': 500
     }), 500
-
 
 if __name__ == '__main__':
     # Set Flask environment

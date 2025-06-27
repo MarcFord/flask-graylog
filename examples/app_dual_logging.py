@@ -60,9 +60,6 @@ gcp_log = GCPLogExtension(app)
 aws_log = AWSLogExtension(app)
 
 # Setup logging for all extensions
-graylog._setup_logging()
-gcp_log._setup_logging()
-aws_log._setup_logging()
 
 # Sample data for demonstration
 USERS = [
@@ -77,7 +74,6 @@ PRODUCTS = [
     {'id': 3, 'name': 'Running Shoes', 'price': 89.99, 'category': 'Sports'},
 ]
 
-
 def get_current_user():
     """
     Mock function to get current user information.
@@ -91,7 +87,6 @@ def get_current_user():
         user = next((u for u in USERS if u['id'] == user_id), None)
         return user
     return None
-
 
 @app.before_request
 def before_request():
@@ -109,7 +104,6 @@ def before_request():
             'user_agent': request.user_agent.string,
         }
     )
-
 
 @app.after_request
 def after_request(response):
@@ -129,7 +123,6 @@ def after_request(response):
     
     return response
 
-
 @app.route('/')
 def home():
     """Home endpoint with basic information."""
@@ -148,7 +141,6 @@ def home():
         ]
     })
 
-
 @app.route('/users')
 def get_users():
     """Get all users - demonstrates INFO level logging."""
@@ -164,7 +156,6 @@ def get_users():
         'users': USERS,
         'total': len(USERS)
     })
-
 
 @app.route('/users/<int:user_id>')
 def get_user(user_id):
@@ -191,7 +182,6 @@ def get_user(user_id):
             }
         )
         return jsonify({'error': 'User not found'}), 404
-
 
 @app.route('/products')
 def get_products():
@@ -226,7 +216,6 @@ def get_products():
             'products': PRODUCTS,
             'total': len(PRODUCTS)
         })
-
 
 @app.route('/test-logs')
 def test_logs():
@@ -279,7 +268,6 @@ def test_logs():
         'note': 'Check your Graylog, Google Cloud Logging, and AWS CloudWatch for these messages'
     })
 
-
 @app.route('/test-error')
 def test_error():
     """Test endpoint to demonstrate error logging with exceptions."""
@@ -325,7 +313,6 @@ def test_error():
     
     return jsonify({'message': 'No error occurred'})
 
-
 @app.route('/health')
 def health_check():
     """Health check endpoint."""
@@ -341,7 +328,6 @@ def health_check():
             'aws': 'configured' if app.config.get('AWS_LOG_GROUP') else 'not_configured'
         }
     })
-
 
 @app.errorhandler(404)
 def not_found(error):
@@ -361,7 +347,6 @@ def not_found(error):
         'method': request.method
     }), 404
 
-
 @app.errorhandler(500)
 def internal_error(error):
     """Handle 500 errors."""
@@ -379,7 +364,6 @@ def internal_error(error):
         'error': 'Internal server error',
         'message': 'An unexpected error occurred'
     }), 500
-
 
 if __name__ == '__main__':
     # Configure logging extensions with user context

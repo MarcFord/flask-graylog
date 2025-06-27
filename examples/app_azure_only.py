@@ -23,7 +23,7 @@ Optional Environment Variables:
 
 import os
 from flask import Flask, request, jsonify
-from flask_network_logging import AzureLog
+from flask_network_logging import AzureLogExtension
 
 app = Flask(__name__)
 
@@ -37,10 +37,8 @@ app.config.update({
     'AZURE_TIMEOUT': os.getenv('AZURE_TIMEOUT', '30'),
 })
 
-# Initialize Azure Monitor extension
-azure_log = AzureLog(app)
-azure_log._setup_logging()
-
+# Initialize Azure Monitor extension (logging setup is automatic)
+azure_log = AzureLogExtension(app)
 
 @app.route('/')
 def index():
@@ -66,13 +64,11 @@ def index():
         ]
     })
 
-
 @app.route('/health')
 def health_check():
     """Health check endpoint."""
     app.logger.info("Health check requested")
     return jsonify({'status': 'healthy', 'service': 'flask-azure-logging-example'})
-
 
 @app.route('/api/users')
 def api_users():
@@ -90,7 +86,6 @@ def api_users():
     ]
     
     return jsonify({'users': users, 'count': len(users)})
-
 
 @app.route('/error')
 def trigger_error():
@@ -111,7 +106,6 @@ def trigger_error():
             'message': 'Check your Azure Monitor Logs for error details'
         }), 500
 
-
 @app.route('/debug')
 def debug_example():
     """Endpoint demonstrating debug level logging."""
@@ -129,7 +123,6 @@ def debug_example():
         'message': 'Debug logging example',
         'note': 'Debug logs may not appear unless AZURE_LOG_LEVEL is set to DEBUG'
     })
-
 
 if __name__ == '__main__':
     # Check if required configuration is present

@@ -84,7 +84,6 @@ app.config.update({
     'OCI_ENVIRONMENT': os.getenv('OCI_ENVIRONMENT', 'development'),
 })
 
-
 def get_current_user():
     """
     Mock function to simulate getting current user information.
@@ -97,7 +96,6 @@ def get_current_user():
     ]
     return random.choice(users)
 
-
 # Initialize all logging extensions
 graylog = GraylogExtension(app, get_current_user=get_current_user)
 gcp_log = GCPLogExtension(app, get_current_user=get_current_user)
@@ -107,16 +105,6 @@ ibm_log = IBMLogExtension(app, get_current_user=get_current_user)
 oci_log = OCILogExtension(app, get_current_user=get_current_user)
 
 # Set up logging for all backends
-graylog._setup_logging()
-gcp_log._setup_logging()
-aws_log._setup_logging()
-azure_log._setup_logging()
-ibm_log._setup_logging()
-oci_log._setup_logging()
-aws_log._setup_logging()
-azure_log._setup_logging()
-ibm_log._setup_logging()
-
 
 @app.before_request
 def before_request():
@@ -135,7 +123,6 @@ def before_request():
         'timestamp': datetime.utcnow().isoformat()
     })
 
-
 @app.after_request
 def after_request(response):
     """Log request completion details."""
@@ -151,7 +138,6 @@ def after_request(response):
     })
     
     return response
-
 
 @app.route('/')
 def index():
@@ -175,7 +161,6 @@ def index():
         ]
     })
 
-
 @app.route('/health')
 def health_check():
     """Health check endpoint."""
@@ -190,7 +175,6 @@ def health_check():
         'backends': get_configured_backends(),
         'timestamp': datetime.utcnow().isoformat()
     })
-
 
 @app.route('/api/users')
 def api_users():
@@ -208,7 +192,6 @@ def api_users():
     ]
     
     return jsonify({'users': users, 'count': len(users)})
-
 
 @app.route('/log-levels')
 def log_levels():
@@ -251,7 +234,6 @@ def log_levels():
         'note': 'Check your configured logging backends for these messages'
     })
 
-
 @app.route('/error')
 def trigger_error():
     """Endpoint that triggers an actual error for testing error logging."""
@@ -271,7 +253,6 @@ def trigger_error():
             'error': 'Intentional error for testing',
             'message': 'Check your logging backends for error details'
         }), 500
-
 
 @app.route('/performance')
 def performance_monitoring():
@@ -310,7 +291,6 @@ def performance_monitoring():
         }
     })
 
-
 @app.route('/custom-fields')
 def custom_fields():
     """Demonstrate logging with custom fields."""
@@ -331,7 +311,6 @@ def custom_fields():
         'note': 'These custom fields will appear in all configured logging backends'
     })
 
-
 def get_configured_backends():
     """Return list of configured logging backends."""
     backends = []
@@ -349,7 +328,6 @@ def get_configured_backends():
     
     return backends
 
-
 @app.errorhandler(500)
 def internal_error(error):
     """Handle internal server errors with logging."""
@@ -363,7 +341,6 @@ def internal_error(error):
         'error': 'Internal server error',
         'request_id': getattr(g, 'request_id', 'unknown')
     }), 500
-
 
 if __name__ == '__main__':
     # Display configuration information

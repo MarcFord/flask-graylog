@@ -27,7 +27,7 @@ Optional Environment Variables:
 
 import os
 from flask import Flask, request, jsonify
-from flask_network_logging import OCILog
+from flask_network_logging import OCILogExtension
 
 app = Flask(__name__)
 
@@ -43,10 +43,8 @@ app.config.update({
     'OCI_ENVIRONMENT': os.getenv('OCI_ENVIRONMENT', 'development'),
 })
 
-# Initialize OCI Logging extension
-oci_log = OCILog(app)
-oci_log._setup_logging()
-
+# Initialize OCI Logging extension (logging setup is automatic)
+oci_log = OCILogExtension(app)
 
 def get_current_user():
     """
@@ -58,7 +56,6 @@ def get_current_user():
         'username': request.headers.get('X-Username', 'guest'),
         'email': request.headers.get('X-User-Email', 'guest@example.com')
     }
-
 
 @app.route('/')
 def index():
@@ -80,7 +77,6 @@ def index():
         }
     })
 
-
 @app.route('/info')
 def info():
     """Application information endpoint."""
@@ -98,7 +94,6 @@ def info():
         }
     })
 
-
 @app.route('/log-test')
 def log_test():
     """Test different log levels."""
@@ -112,7 +107,6 @@ def log_test():
         'levels_tested': ['debug', 'info', 'warning', 'error'],
         'note': 'Check your OCI Logging console to see the logs'
     })
-
 
 @app.route('/user-context')
 def user_context():
@@ -132,7 +126,6 @@ def user_context():
         'user': user,
         'note': 'Check OCI Logging for user context information'
     })
-
 
 @app.route('/error-test')
 def error_test():
@@ -155,7 +148,6 @@ def error_test():
             'note': 'Check OCI Logging console for error details'
         }), 500
 
-
 @app.route('/bulk-log-test')
 def bulk_log_test():
     """Test bulk logging to stress test the OCI handler."""
@@ -176,7 +168,6 @@ def bulk_log_test():
         'note': 'Check OCI Logging console for all messages'
     })
 
-
 @app.route('/health')
 def health():
     """Health check endpoint."""
@@ -187,7 +178,6 @@ def health():
         'logging': 'enabled',
         'backend': 'oci'
     })
-
 
 @app.errorhandler(404)
 def not_found(error):
@@ -205,7 +195,6 @@ def not_found(error):
         'note': 'This 404 error has been logged to OCI Logging'
     }), 404
 
-
 @app.errorhandler(500)
 def internal_error(error):
     """Handle 500 errors."""
@@ -221,7 +210,6 @@ def internal_error(error):
         'message': 'An unexpected error occurred',
         'note': 'This error has been logged to OCI Logging'
     }), 500
-
 
 if __name__ == '__main__':
     # Check if required configuration is present

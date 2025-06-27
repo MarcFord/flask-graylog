@@ -28,15 +28,17 @@ from .context_filter import GraylogContextFilter, FlaskNetworkLoggingContextFilt
 from .extension import GraylogExtension
 from .gcp_extension import GCPLogExtension
 from .aws_extension import AWSLogExtension
+from .azure_extension import AzureLogExtension
 
 # Create aliases for easier imports
 Graylog = GraylogExtension
 GCPLog = GCPLogExtension
 AWSLog = AWSLogExtension
+AzureLog = AzureLogExtension
 
 __all__ = [
-    "GraylogExtension", "GCPLogExtension", "AWSLogExtension", 
-    "Graylog", "GCPLog", "AWSLog", 
+    "GraylogExtension", "GCPLogExtension", "AWSLogExtension", "AzureLogExtension",
+    "Graylog", "GCPLog", "AWSLog", "AzureLog",
     "GraylogContextFilter", "FlaskNetworkLoggingContextFilter", "FNLContextFilter",  # Last two are aliases
     "__version__"
 ]

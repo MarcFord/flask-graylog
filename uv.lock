@@ -327,6 +327,7 @@ dependencies = [
     { name = "google-cloud-logging" },
     { name = "markupsafe" },
     { name = "pygelf" },
+    { name = "requests" },
     { name = "user-agents" },
 ]
 
@@ -361,6 +362,7 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=2.10,<6.0" },
     { name = "pytest-mock", marker = "extra == 'test'", specifier = ">=3.6,<4.0" },
     { name = "pytest-xdist", marker = "extra == 'test'", specifier = ">=2.0,<4.0" },
+    { name = "requests", specifier = ">=2.25.0" },
     { name = "user-agents", specifier = ">=2.0.0" },
 ]
 provides-extras = ["test", "dev"]

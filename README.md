@@ -5,7 +5,7 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MarcFord/flask-network-logging/blob/main/LICENSE)
 
-A Flask extension for sending application logs to remote logging services including Graylog via GELF (Graylog Extended Log Format), Google Cloud Logging, and AWS CloudWatch Logs.
+A Flask extension for sending application logs to remote logging services including Graylog via GELF (Graylog Extended Log Format), Google Cloud Logging, AWS CloudWatch Logs, and Azure Monitor Logs.
 
 > **📊 Badge Status**: The CI badge shows the latest build status. The codecov badge will update once coverage reports are uploaded to codecov.io. PyPI badges will appear after the first release.
 
@@ -21,6 +21,7 @@ A Flask extension for sending application logs to remote logging services includ
 - 📡 Support for Graylog via GELF
 - ☁️ Support for Google Cloud Logging
 - 🚀 Support for AWS CloudWatch Logs
+- 📊 Support for Azure Monitor Logs
 
 ## Installation
 
@@ -118,6 +119,36 @@ if __name__ == '__main__':
     app.run()
 ```
 
+### Azure Monitor Logs Integration
+
+```python
+from flask import Flask
+from flask_network_logging import AzureLog
+
+app = Flask(__name__)
+
+# Configure Azure Monitor Logs
+app.config.update({
+    'AZURE_WORKSPACE_ID': 'your-workspace-id',
+    'AZURE_WORKSPACE_KEY': 'your-workspace-key',
+    'AZURE_LOG_TYPE': 'FlaskAppLogs',
+    'AZURE_LOG_LEVEL': 'INFO',
+    'AZURE_ENVIRONMENT': 'production'
+})
+
+# Initialize extension
+azure_log = AzureLog(app)
+azure_log._setup_logging()
+
+@app.route('/')
+def hello():
+    app.logger.info("Hello world endpoint accessed")
+    return "Hello, World!"
+
+if __name__ == '__main__':
+    app.run()
+```
+
 ## Examples
 
 Check out the comprehensive example application in the [`examples/`](examples/) directory:
@@ -172,6 +203,17 @@ cd examples/
 | `AWS_ENVIRONMENT` | Environment where logs should be sent to AWS | `production` |
 | `AWS_APP_NAME` | Name of the application sending logs | `app.name` |
 | `AWS_SERVICE_NAME` | Name of the service sending logs | `app.name` |
+
+### Azure Monitor Logs Configuration
+
+| Configuration Key | Description | Default |
+|-------------------|-------------|---------|
+| `AZURE_WORKSPACE_ID` | Azure Log Analytics workspace ID | Required |
+| `AZURE_WORKSPACE_KEY` | Azure Log Analytics workspace key | Required |
+| `AZURE_LOG_TYPE` | Custom log type name in Azure Monitor | `FlaskAppLogs` |
+| `AZURE_LOG_LEVEL` | Minimum log level | `WARNING` |
+| `AZURE_ENVIRONMENT` | Environment where logs should be sent to Azure | `production` |
+| `AZURE_TIMEOUT` | HTTP request timeout in seconds | `30` |
 
 
 ## Development
